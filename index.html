@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>História da Névoa | Nin Online (Hawk)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Fontes Personalizadas */
+        h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; }
+        body { font-family: 'Lato', sans-serif; }
+
+        /* Scrollbar Personalizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Animações */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Fundo com efeito de Névoa */
+        .mist-bg {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Estilo de Citações */
+        blockquote {
+            border-left: 4px solid #38bdf8;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #94a3b8;
+            background: rgba(30, 41, 59, 0.5);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin: 1.5rem 0;
+        }
+
+        /* --- MODO EDIÇÃO --- */
+        .editable-active:hover {
+            outline: 2px dashed #38bdf8;
+            background-color: rgba(56, 189, 248, 0.1);
+            cursor: text;
+        }
+        .edit-controls {
+            display: none; 
+        }
+        .admin-mode .edit-controls {
+            display: inline-block;
+        }
+        
+        /* Modal de Login */
+        #loginModal {
+            backdrop-filter: blur(5px);
+        }
+
+        /* Placeholder de Imagem */
+        .img-placeholder {
+            border: 2px dashed #475569;
+            background: rgba(30, 41, 59, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="mist-bg text-slate-200 min-h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Cabeçalho Mobile -->
+    <div class="md:hidden bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center z-30">
+        <span class="text-xl font-bold brand-font text-sky-400">Vila da Névoa</span>
+        <button onclick="toggleSidebar()" class="text-slate-200 focus:outline-none">
+            <i class="fas fa-bars text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Barra Lateral de Navegação -->
+    <aside id="sidebar" class="transform -translate-x-full md:translate-x-0 fixed md:relative z-40 w-64 h-full bg-slate-900/95 border-r border-slate-700 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+        <div class="p-6 border-b border-slate-700 hidden md:block">
+            <h1 class="text-2xl font-bold brand-font text-sky-400 tracking-wider text-center editable-text">
+                <i class="fas fa-water mr-2"></i>Kirigakure
+            </h1>
+            <p class="text-xs text-slate-500 text-center mt-1 editable-text">História da Névoa no Servidor Hawk</p>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto p-4 space-y-2">
+            <button onclick="showPage('intro')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500 active-nav">
+                <i class="fas fa-scroll w-6 text-center"></i> Introdução
+            </button>
+            <button onclick="showPage('chapter1')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500">
+                <i class="fas fa-torii-gate w-6 text-center"></i> Cap. 1: O Início
+            </button>
+            <div class="pt-2 pb-1">
+                <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest editable-text">A Era Acqua</p>
+            </div>
+            <button onclick="showPage('chapter2')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500">
+                <i class="fas fa-water w-6 text-center"></i> Cap. 2: Shodai Mizukami
+            </button>
+        </nav>
+
+        <!-- Área de Admin / Autor -->
+        <div class="p-4 border-t border-slate-700 bg-slate-900">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-sky-900 flex items-center justify-center text-sky-200 font-bold">
+                        A
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-200 editable-text">Auriosh</p>
+                        <p class="text-xs text-slate-500 editable-text">Autor & Historiador</p>
+                    </div>
+                </div>
+                <!-- Botão de Login (Engrenagem) -->
+                <button onclick="openLoginModal()" class="text-slate-600 hover:text-sky-400 p-2" title="Área de Edição">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+            <!-- Painel de Controle de Admin (Oculto) -->
+            <div id="adminPanel" class="hidden mt-4 pt-4 border-t border-slate-700">
+                <p class="text-xs text-green-400 font-bold mb-2 flex items-center"><i class="fas fa-circle text-[8px] mr-2"></i> MODO EDIÇÃO ATIVO</p>
+                <button onclick="downloadUpdatedHTML()" class="w-full bg-green-700 hover:bg-green-600 text-white text-xs font-bold py-2 px-2 rounded mb-2 transition-colors">
+                    <i class="fas fa-save mr-1"></i> Baixar HTML Atualizado
+                </button>
+                <p class="text-[10px] text-slate-500 text-center">Clique nos textos para editar.<br>Use os botões azuis para mídia.</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Modal de Login -->
+    <div id="loginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-80">
+            <h3 class="text-xl font-bold text-white mb-4">Acesso Administrativo</h3>
+            <input type="password" id="adminPassword" placeholder="Senha..." class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white mb-4 focus:outline-none focus:border-sky-500">
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeLoginModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancelar</button>
+                <button onclick="checkLogin()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded font-bold">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área de Conteúdo Principal -->
+    <main class="flex-1 h-screen overflow-y-auto relative scroll-smooth" id="content-area">
+        <div class="max-w-4xl mx-auto p-6 md:p-12 pb-24">
+            
+            <!-- CONTEÚDO: INTRODUÇÃO -->
+            <section id="intro" class="page-content fade-in block">
+                <div class="text-center mb-12">
+                    <span class="inline-block py-1 px-3 rounded-full bg-sky-900/30 text-sky-300 text-xs font-bold uppercase tracking-widest mb-4 border border-sky-700/50 editable-text">Registro Histórico</span>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight editable-text">História da Vila Oculta da Névoa</h1>
+                    <p class="text-xl text-slate-400 max-w-2xl mx-auto editable-text">Uma crônica sobre fundação, guerras, traições e glória no servidor Hawk.</p>
+                </div>
+
+                <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-8 shadow-lg">
+                    <h2 class="text-2xl font-bold text-sky-400 mb-4 flex items-center editable-text">
+                        <i class="fas fa-book-open mr-3"></i> Introdução
+                    </h2>
+                    <div class="prose prose-invert max-w-none text-slate-300 space-y-4">
+                        <p class="editable-text">Seja bem-vindo(a).</p>
+                        <p class="editable-text">A partir daqui vou registrar tudo o que a <strong>Vila da Névoa</strong> viveu desde o primeiro dia do servidor. Não para me colocar como protagonista e nem para acusar ou defender ninguém. Meu objetivo é apenas contar o que realmente aconteceu, do jeito que eu vi, como <strong>Auriosh</strong>.</p>
+                        <p class="editable-text">Cada capítulo será baseado em fatos e na minha experiência dentro da vila. Quero que quem chegar agora consiga entender nossa história sem depender de <em>boatos</em>, lembranças soltas ou versões distorcidas.</p>
+                        <p class="editable-text">Os acontecimentos serão divididos por períodos importantes: <strong>fundação</strong>, <strong>eleições</strong>, <strong>guerras</strong>, <strong>conflitos internos</strong>, <strong>alianças</strong>, <strong>traições</strong> e tudo que marcou a Névoa ao longo do tempo.</p>
+                        <p class="editable-text">Que este registro ajude novos membros a entenderem de onde viemos e por que somos do jeito que somos.</p>
+                        
+                        <div class="mt-8 flex justify-center">
+                            <button onclick="showPage('chapter1')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-sky-900/50">
+                                Começar a Leitura <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTEÚDO: CAPÍTULO 1 -->
+            <section id="chapter1" class="page-content hidden fade-in">
+                <div class="border-b border-slate-700 pb-6 mb-8">
+                    <h4 class="text-sky-500 font-bold uppercase tracking-widest text-sm mb-2 editable-text">Capítulo 1</h4>
+                    <h1 class="text-3xl md:text-4xl font-bold text-white editable-text">O Início da História (29/08/2025)</h1>
+                </div>
+
+                <div class="space-y-8 text-slate-300 leading-relaxed text-lg">
+                    <div class="bg-slate-800/30 p-6 rounded-lg border-l-4 border-sky-600">
+                        <p class="editable-text">A era shinobi começou em 29 de agosto de 2025. Os daimyos dos grandes países — País da Água, País do Fogo e País do Vento — decidiram que era hora de fortalecer suas fronteiras. Para isso, ergueram vilas ocultas destinadas a treinar ninjas capazes de proteger seus territórios. Foi assim que despertei como um ninja da Névoa.</p>
+                    </div>
+
+                    <p class="editable-text">Logo nos primeiros passos dentro da vila, senti algo estranho. Era como reconhecer pessoas que eu nunca tinha visto. Rostos, vozes, maneiras de agir… tudo ecoava uma familiaridade que eu não conseguia explicar. Como se vínculos antigos tivessem sido retomados sem aviso. Eu simplesmente aceitei aquele sentimento.</p>
+
+                    <p class="editable-text">No começo, cada um buscava seu próprio ritmo de crescimento. Alguns treinavam o dia inteiro; outros, como eu, faziam o possível com o tempo que tinham. Passei muitos dias sozinho, repetindo exercícios, concluindo pequenas missões e tentando acompanhar o avanço dos outros shinobi. Mesmo assim, seguia firme.</p>
+
+                    <!-- PLACEHOLDER DE IMAGEM 1 -->
+                    <div class="img-container">
+                         <!-- Se houver imagem carregada, ela substitui este bloco -->
+                        <div class="img-placeholder" id="img-placeholder-1">
+                            <i class="fas fa-image text-3xl mb-2"></i>
+                            <span class="text-sm">Espaço para Imagem (Ex: Print da Fundação)</span>
+                            <button class="edit-controls bg-blue-600 text-white text-xs px-3 py-1 rounded mt-2 hover:bg-blue-500" onclick="insertImage(this)">Adicionar Imagem</button>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mt-8 mb-4 editable-text">A Sombra dos Renegados</h3>
+                    <p class="editable-text">Durante uma missão no <strong>País da Neve</strong>, encontrei um renegado pela primeira vez. Ele se chamava <em>nearBR</em>. Já havia abandonado a Névoa e caminhava ao lado de outros renegados. Não conversamos muito. Ele comentou que encontrou mais apoio longe da vila do que dentro dela e, depois de uma pausa, me convidou para renegar também.</p>
+                    <p class="editable-text">Pensei sobre aquilo, mas não por muito tempo. A Névoa era meu lar, e eu não tinha intenção de abandoná-lo. Um tempo depois, ele seria lembrado como <strong>Abysinth</strong>, conhecido por atacar e matar ninjas da nossa própria vila.</p>
+
+                    <h3 class="text-2xl font-bold text-white mt-8 mb-4 editable-text">Os Primeiros Nomes</h3>
+                    <p class="editable-text">Enquanto isso, o mundo ao redor fervilhava. O <strong>País das Ondas</strong> e o <strong>País dos Sapos</strong> se tornaram palco de inúmeros confrontos. Ali, entre batalhas e treinos intensos, muitos de nós moldamos nossas primeiras habilidades.</p>
+                    <p class="editable-text">Entre eles, um nome se destacou desde cedo: <strong>Johnzera</strong>. Ele foi essencial naquele início. Guiou grupos inteiros, ajudou novatos a completar missões difíceis e esteve presente em praticamente todas as frentes de apoio. Muitos shinobi da Névoa só conseguiram evoluir graças ao esforço dele.</p>
+
+                    <p class="editable-text">Apesar da dedicação de muitos, a vila ainda não tinha uma liderança definida. Foi então que surgiu alguém disposto a reorganizar as coisas: <strong>Acqua</strong>. Ele percebeu o quanto a Névoa estava dispersa e começou a aproximar os ninjas, trazendo uma direção mais clara. Seu esforço foi sentido rapidamente, preparando o terreno para o que viria a seguir.</p>
+
+                    <h3 class="text-2xl font-bold text-white mt-8 mb-4 editable-text">A Eleição do Shodai Mizukami</h3>
+                    <p class="editable-text">Com a estrutura inicial da vila tomando forma, os daimyos anunciaram as primeiras eleições. Nos dias 06 e 07 de setembro, cada shinobi da Névoa pôde votar em dois nomes para compor o conselho. Os escolhidos foram <strong>Diabo</strong>, <strong>Adashi</strong> e <strong>Johnzera</strong>.</p>
+                    
+                    <p class="editable-text">Coube a eles decidir quem deveria assumir a liderança máxima da Névoa. A escolha foi imediata. Para muitos, inclusive para o próprio conselho, Acqua era a opção mais óbvia. Ele tinha sido o primeiro a tentar unir a Névoa quando ela ainda era apenas um grupo desorganizado.</p>
+                    
+                    <blockquote class="editable-text">
+                        Os três conselheiros olharam para a situação, relembraram os primeiros dias e chegaram à mesma conclusão sem precisar discutir por muito tempo. Não havia dúvida. <strong>Acqua</strong> era o nome certo para guiar a Névoa. Assim, ele se tornou o primeiro Mizukami da história da vila.
+                    </blockquote>
+                    
+                    <!-- PLACEHOLDER DE IMAGEM 2 -->
+                    <div class="img-container">
+                        <div class="img-placeholder" id="img-placeholder-2">
+                            <i class="fas fa-image text-3xl mb-2"></i>
+                            <span class="text-sm">Espaço para Imagem (Ex: Acqua e o Conselho)</span>
+                            <button class="edit-controls bg-blue-600 text-white text-xs px-3 py-1 rounded mt-2 hover:bg-blue-500" onclick="insertImage(this)">Adicionar Imagem</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex justify-between">
+                        <button onclick="showPage('intro')" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-arrow-left"></i> Voltar</button>
+                        <button onclick="showPage('chapter2')" class="text-sky-400 hover:text-sky-300 font-bold transition-colors">Próximo Capítulo <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTEÚDO: CAPÍTULO 2 -->
+            <section id="chapter2" class="page-content hidden fade-in">
+                <div class="border-b border-slate-700 pb-6 mb-8">
+                    <h4 class="text-sky-500 font-bold uppercase tracking-widest text-sm mb-2 editable-text">Capítulo 2</h4>
+                    <h1 class="text-3xl md:text-4xl font-bold text-white editable-text">Acqua das Mil Bolhas, Shodai Mizukami</h1>
+                </div>
+
+                <div class="space-y-12 text-slate-300 leading-relaxed text-lg">
+                    
+                    <!-- 2.1 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.1 Início do Mandato (08/09/2025)</h2>
+                        
+                         <!-- PLACEHOLDER DE IMAGEM 3 -->
+                        <div class="img-container">
+                            <div class="img-placeholder" id="img-placeholder-3">
+                                <i class="fas fa-image text-3xl mb-2"></i>
+                                <span class="text-sm">Espaço para Imagem (Ex: Sala do Kami)</span>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-3 py-1 rounded mt-2 hover:bg-blue-500" onclick="insertImage(this)">Adicionar Imagem</button>
+                            </div>
+                        </div>
+
+                        <p class="mb-4 editable-text">O mandato de Acqua começou em 8 de setembro de 2025, abrindo um período intenso e cheio de mudanças para a Vila da Névoa. Aqueles que viveram essa época lembram não apenas dos acontecimentos grandiosos, mas do clima de movimento constante.</p>
+                        <p class="mb-4 editable-text">Logo nos primeiros dias, Acqua reorganizou a estrutura interna da vila, escolhendo ninjas de confiança para as principais organizações:</p>
+                        <ul class="list-none space-y-2 bg-slate-900/50 p-4 rounded-lg">
+                            <li class="editable-text"><i class="fas fa-mask text-sky-600 mr-2"></i> <strong>Diabo</strong> — Líder da ANBU</li>
+                            <li class="editable-text"><i class="fas fa-khanda text-sky-600 mr-2"></i> <strong>Kros</strong> — Líder dos Sete Espadachins da Névoa</li>
+                            <li class="editable-text"><i class="fas fa-user-md text-sky-600 mr-2"></i> <strong>Sanshi</strong> — Líder da Organização Médica</li>
+                            <li class="editable-text"><i class="fas fa-shield-alt text-sky-600 mr-2"></i> <strong>Joui</strong> — Líder da Corporação Policial</li>
+                        </ul>
+                        <p class="mb-4 editable-text">Como único shinobi reconhecido pelo daimyo do País da Água, Acqua tinha autoridade para promover eventos formais, e ele aproveitou isso com entusiasmo. A Névoa viveu dias movimentados com treinamentos na Academia Ninja, expedições marítimas como a Caça ao Kraken e atividades promovidas por diferentes líderes.</p>
+                    </div>
+
+                    <!-- 2.2 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.2 A Escalada dos Conflitos em Asoki</h2>
+                        <!-- PLACEHOLDER DE IMAGEM 4 (Kraken/Batalha) -->
+                        <div class="img-container">
+                            <div class="img-placeholder" id="img-placeholder-4">
+                                <i class="fas fa-image text-3xl mb-2"></i>
+                                <span class="text-sm">Espaço para Imagem (Ex: Batalha contra Kraken ou Asoki)</span>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-3 py-1 rounded mt-2 hover:bg-blue-500" onclick="insertImage(this)">Adicionar Imagem</button>
+                            </div>
+                        </div>
+
+                        <p class="mb-4 editable-text">Asoki rapidamente se tornou o epicentro de tensão entre Névoa e Folha. Ninjas da Folha passaram a oprimir e hostilizar membros da Névoa dentro do território. Acqua tomou uma posição firme:</p>
+                        <blockquote class="mb-4 editable-text">
+                            “Asoki é território da Névoa, e estou disposto a lutar quantas guerras forem necessárias por ela.”
+                        </blockquote>
+                        <p class="editable-text">Esse posicionamento marcou o surgimento de nomes importantes na linha de frente: <strong>Rafa</strong>, <strong>Needle</strong>, <strong>Juuj</strong>, <strong>Pjeul</strong>, <strong>Sanshi</strong> e eu, <strong>Auriosh</strong>. Outros como <strong>Elisu</strong>, <strong>Xisde</strong>, <strong>Rhys</strong>, <strong>Mit</strong>, <strong>Zkbalroa</strong>, <strong>Bobori</strong>, <strong>Jovem</strong>, <strong>Hash</strong> e <strong>Raveny</strong> também foram decisivos.</p>
+                        <p class="mt-4 editable-text">Nessa época também tivemos o primeiro <strong>Blood Challenge</strong> da Névoa, onde BunnyBesito desafiou Virgem4Ever.</p>
+                        
+                        <div class="video-container bg-black/30 p-4 rounded mt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-sm font-bold text-red-400 editable-text"><i class="fab fa-youtube"></i> Blood Challenge: BunnyBesito vs Virgem4Ever</h4>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-2 py-1 rounded ml-2" onclick="editVideo(this)">Editar Vídeo</button>
+                            </div>
+                            <div class="aspect-w-16 aspect-h-9">
+                                <!-- URL corrigida para nocookie e referrer policy adicionado -->
+                                <iframe class="w-full h-64 md:h-80 rounded shadow-lg" src="https://www.youtube-nocookie.com/embed/LEshwQDi9ho" title="Blood Challenge" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            </div>
+                            <div class="text-center mt-2">
+                                <a href="https://www.youtube.com/watch?v=LEshwQDi9ho" target="_blank" class="text-xs text-sky-400 hover:underline"><i class="fas fa-external-link-alt"></i> Assistir no YouTube (Link Externo)</a>
+                            </div>
+                        </div>
+
+                        <div class="video-container bg-black/30 p-4 rounded mt-4">
+                             <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-sm font-bold text-red-400 editable-text"><i class="fab fa-youtube"></i> Batalha Névoa vs Folha</h4>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-2 py-1 rounded ml-2" onclick="editVideo(this)">Editar Vídeo</button>
+                            </div>
+                            <div class="aspect-w-16 aspect-h-9">
+                                <iframe class="w-full h-64 md:h-80 rounded shadow-lg" src="https://www.youtube-nocookie.com/embed/JeySH3BWxRU" title="Batalha Névoa vs Folha" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            </div>
+                            <div class="text-center mt-2">
+                                <a href="https://www.youtube.com/watch?v=JeySH3BWxRU" target="_blank" class="text-xs text-sky-400 hover:underline"><i class="fas fa-external-link-alt"></i> Assistir no YouTube (Link Externo)</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2.3 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.3 O Torneio dos Primeiros Sannin</h2>
+                        <p class="mb-4 editable-text">Pouco depois, ocorreu o torneio que elegeria os primeiros Sannin da Névoa. As batalhas foram intensas, com a vila inteira parando para assistir. Os vencedores foram:</p>
+                        <ul class="list-disc ml-6 space-y-2 text-sky-200">
+                            <li class="editable-text"><strong>Diabo</strong>, das 1000 Faces</li>
+                            <li class="editable-text"><strong>Guinho</strong>, Boca de Caçapa</li>
+                            <li class="editable-text"><strong>Prado</strong>, Mãos de Mosquito</li>
+                        </ul>
+                        <p class="mt-4 text-sm text-slate-400 editable-text">Foi nesse período que comecei a participar mais ativamente, tornando-me vice-líder da Organização Médica e integrando o Aviário (Discord).</p>
+                    </div>
+
+                    <!-- 2.4 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.4 A Kami Summit</h2>
+                         <!-- PLACEHOLDER DE IMAGEM 5 -->
+                         <div class="img-container">
+                            <div class="img-placeholder" id="img-placeholder-5">
+                                <i class="fas fa-image text-3xl mb-2"></i>
+                                <span class="text-sm">Espaço para Imagem (Ex: Kami Summit)</span>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-3 py-1 rounded mt-2 hover:bg-blue-500" onclick="insertImage(this)">Adicionar Imagem</button>
+                            </div>
+                        </div>
+                        <p class="mb-4 editable-text">As vitórias iniciais da Névoa elevaram o moral. A Folha solicitou uma Kami Summit para discutir limites. Entretanto, a paz durou pouco. A Folha violou a aliança e retomou ataques.</p>
+                        <blockquote class="mb-4 editable-text">
+                            “Um Mizukami deve liderar de pé na vanguarda. Conforto não é algo que cabe a mim.” — Acqua
+                        </blockquote>
+                        <p class="editable-text">Nesse período, <strong>Juuj</strong> reconstruiu a Corporação Policial e <strong>Syllia</strong> assumiu como vice-diretora da Corporação Médica, elevando a organização das invasões.</p>
+                    </div>
+
+                    <!-- 2.5 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.5 O Primeiro Brasileirão (03/10)</h2>
+                        <p class="mb-4 editable-text">Um torneio organizado por Diabo e Prado reuniu as melhores duplas de cada vila. Representando as nações:</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="bg-slate-800/50 p-4 rounded">
+                                <h5 class="text-sky-400 font-bold mb-2 editable-text">Névoa</h5>
+                                <ul class="list-disc ml-4 text-sm text-slate-300">
+                                    <li class="editable-text">FredL (Diabo) e Espigo — <em>Bloody Mist</em></li>
+                                    <li class="editable-text">Haze (Fate) e Majin — <em>Professores</em></li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-800/50 p-4 rounded">
+                                <h5 class="text-green-400 font-bold mb-2 editable-text">Folha</h5>
+                                <ul class="list-disc ml-4 text-sm text-slate-300">
+                                    <li class="editable-text">Wyn e Hisuy — <em>Guris</em></li>
+                                    <li class="editable-text">Maclean e Ravil — <em>Vontade do Fogo</em></li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-800/50 p-4 rounded">
+                                <h5 class="text-yellow-400 font-bold mb-2 editable-text">Areia</h5>
+                                <ul class="list-disc ml-4 text-sm text-slate-300">
+                                    <li class="editable-text">Tucson e Ivan — <em>Manitos</em> (Vencedores)</li>
+                                    <li class="editable-text">Weshy e Muzis — <em>New Sand</em></li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-800/50 p-4 rounded">
+                                <h5 class="text-purple-400 font-bold mb-2 editable-text">Kuronami</h5>
+                                <ul class="list-disc ml-4 text-sm text-slate-300">
+                                    <li class="editable-text">Maciel e Vilão — <em>Tier‑S</em></li>
+                                    <li class="editable-text">Synesis e Poseidon — <em>Criminosos</em></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <p class="editable-text">O evento terminou com a vitória da Areia (Tucson e Ivan - <em>Manitos</em>), mas serviu para reacender o espírito competitivo para o Exame Chunin.</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mt-4">
+                            <div class="video-container bg-black/30 p-2 rounded">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-xs text-center text-slate-500 editable-text">Convite Brasileirão</p>
+                                    <button class="edit-controls bg-blue-600 text-white text-[10px] px-1 rounded" onclick="editVideo(this)">Editar</button>
+                                </div>
+                                <iframe class="w-full h-48 rounded" src="https://www.youtube-nocookie.com/embed/2kgbDO2NXkA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                                <div class="text-center mt-1">
+                                    <a href="https://www.youtube.com/watch?v=2kgbDO2NXkA" target="_blank" class="text-[10px] text-sky-400 hover:underline">Assistir no YouTube</a>
+                                </div>
+                            </div>
+                            <div class="video-container bg-black/30 p-2 rounded">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-xs text-center text-slate-500 editable-text">Melhores Momentos</p>
+                                    <button class="edit-controls bg-blue-600 text-white text-[10px] px-1 rounded" onclick="editVideo(this)">Editar</button>
+                                </div>
+                                <iframe class="w-full h-48 rounded" src="https://www.youtube-nocookie.com/embed/L9j0INikaeQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                                <div class="text-center mt-1">
+                                    <a href="https://www.youtube.com/watch?v=L9j0INikaeQ" target="_blank" class="text-[10px] text-sky-400 hover:underline">Assistir no YouTube</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2.6 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.6 O Início das Eleições</h2>
+                        <p class="editable-text">Os candidatos ao conselho foram <strong>Elisu</strong>, <strong>Juuj</strong>, <strong>Guinho</strong> e <strong>Prado</strong>. Para Mizukami: <strong>Diabo</strong>, <strong>BunnyBesito</strong> e <strong>Shinso</strong>.</p>
+                        <p class="mt-2 editable-text">Tensões surgiram quando descobriu-se que Elisu mantinha aliança com Abysinth, o renegado que atacava novatos.</p>
+                        
+                        <div class="video-container bg-black/30 p-4 rounded mt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-sm font-bold text-sky-400 mb-2 editable-text">Campanha de Elisu</h4>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-2 py-1 rounded ml-2" onclick="editVideo(this)">Editar Vídeo</button>
+                            </div>
+                            <iframe class="w-full h-64 md:h-80 rounded" src="https://www.youtube-nocookie.com/embed/Bs9TKMVfJO8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                             <div class="text-center mt-2">
+                                <a href="https://www.youtube.com/watch?v=Bs9TKMVfJO8" target="_blank" class="text-xs text-sky-400 hover:underline"><i class="fas fa-external-link-alt"></i> Assistir no YouTube</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2.7 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.7 O Primeiro Exame Chunin (01/11)</h2>
+                        <p class="mb-4 editable-text">Minha equipe (com Needle e Ollive) foi desclassificada na segunda fase, mas assistimos com orgulho as promoções:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm font-mono text-sky-200 bg-slate-800 p-4 rounded">
+                            <span class="editable-text">FredL</span>
+                            <span class="editable-text">GuinhoHenriq</span>
+                            <span class="editable-text">Prado</span>
+                            <span class="editable-text">Haze</span>
+                            <span class="editable-text">Majin</span>
+                            <span class="editable-text">Vilao</span>
+                        </div>
+                        <p class="mt-2 text-yellow-400 font-bold editable-text"><i class="fas fa-star mr-1"></i> Destaque: Bobori (Special Jonin)</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mt-4">
+                             <div class="video-container bg-black/30 p-2 rounded">
+                                <div class="flex justify-between items-center mb-1">
+                                    <h4 class="text-xs font-bold text-sky-400 editable-text">Registro: 2ª Fase</h4>
+                                    <button class="edit-controls bg-blue-600 text-white text-[10px] px-1 rounded" onclick="editVideo(this)">Editar</button>
+                                </div>
+                                <iframe class="w-full h-48 rounded" src="https://www.youtube-nocookie.com/embed/kDAKjNMcAeI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                                <div class="text-center mt-1">
+                                    <a href="https://www.youtube.com/watch?v=kDAKjNMcAeI" target="_blank" class="text-[10px] text-sky-400 hover:underline">Assistir no YouTube</a>
+                                </div>
+                            </div>
+                            <div class="video-container bg-black/30 p-2 rounded">
+                                <div class="flex justify-between items-center mb-1">
+                                    <h4 class="text-xs font-bold text-sky-400 editable-text">Registro: 3ª Fase</h4>
+                                    <button class="edit-controls bg-blue-600 text-white text-[10px] px-1 rounded" onclick="editVideo(this)">Editar</button>
+                                </div>
+                                <iframe class="w-full h-48 rounded" src="https://www.youtube-nocookie.com/embed/S6loYVt4WDY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                                <div class="text-center mt-1">
+                                    <a href="https://www.youtube.com/watch?v=S6loYVt4WDY" target="_blank" class="text-[10px] text-sky-400 hover:underline">Assistir no YouTube</a>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="bg-black/30 p-4 rounded mt-4">
+                             <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-sm font-bold text-slate-400 mb-2 editable-text">Aula de PvP (Vilão)</h4>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-2 py-1 rounded ml-2" onclick="editVideo(this)">Editar Vídeo</button>
+                            </div>
+                            <iframe class="w-full h-64 md:h-80 rounded" src="https://www.youtube-nocookie.com/embed/UFBmTtOlnI8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                             <div class="text-center mt-2">
+                                <a href="https://www.youtube.com/watch?v=UFBmTtOlnI8" target="_blank" class="text-xs text-sky-400 hover:underline"><i class="fas fa-external-link-alt"></i> Assistir no YouTube</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2.8 -->
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.8 A Segunda Grande Guerra Ninja (02/11)</h2>
+                        <p class="mb-4 editable-text">No dia seguinte, organizamos nossas defesas na floresta. <strong>Glut</strong>, da Kuronami, juntou-se a nós inesperadamente, sendo perdoada no campo de batalha. Com a vitória, conquistamos a Armadura de Guerra.</p>
+                        <p class="mb-4 editable-text">Votações encerradas. O novo conselho foi formado por <strong>Guinho</strong>, <strong>Juuj</strong> e <strong>Elisu</strong>.</p>
+                        <div class="bg-gradient-to-r from-sky-900 to-slate-900 p-6 rounded-lg border border-sky-700 text-center">
+                            <p class="text-sm text-slate-400 uppercase tracking-widest mb-2 editable-text">Novo Kami Eleito</p>
+                            <h3 class="text-3xl font-bold text-white editable-text">Kirisaki (Diabo)</h3>
+                        </div>
+                        <p class="mt-4 italic text-slate-500 text-sm text-center editable-text">Os problemas envolvendo Elisu, porém, estavam longe de acabar, mas essa já é outra parte da história...</p>
+                    </div>
+
+                    <div class="mt-10 flex justify-between">
+                        <button onclick="showPage('chapter1')" class="text-slate-400 hover:text-white transition-colors"><i class="fas fa-arrow-left"></i> Capítulo Anterior</button>
+                        <span class="text-slate-600 cursor-not-allowed">Fim do Registro Atual</span>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Navegação
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.add('hidden');
+                page.classList.remove('block');
+            });
+
+            const selectedPage = document.getElementById(pageId);
+            if(selectedPage) {
+                selectedPage.classList.remove('hidden');
+                selectedPage.classList.add('block');
+                
+                const contentArea = document.getElementById('content-area');
+                contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            if(window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // Toggle Sidebar Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        // --- SISTEMA DE LOGIN E EDIÇÃO ---
+
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function checkLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === "igor123") {
+                enableAdminMode();
+                closeLoginModal();
+                alert("Modo de edição ativado! Clique nos textos ou botões de mídia para editar.");
+            } else {
+                alert("Senha incorreta.");
+            }
+        }
+
+        function enableAdminMode() {
+            document.body.classList.add('admin-mode');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            
+            // Tornar textos editáveis
+            const editables = document.querySelectorAll('.editable-text');
+            editables.forEach(el => {
+                el.contentEditable = "true";
+                el.classList.add('editable-active');
+            });
+        }
+
+        function editVideo(btn) {
+            const container = btn.closest('.video-container');
+            const iframe = container.querySelector('iframe');
+            const currentSrc = iframe.src;
+            
+            let newSrc = prompt("Insira a nova URL de embed do YouTube (ex: https://www.youtube.com/embed/VIDEO_ID):", currentSrc);
+            
+            if (newSrc) {
+                // Tenta forçar o domínio no-cookie para evitar erros
+                if(newSrc.includes("youtube.com/embed")) {
+                    newSrc = newSrc.replace("youtube.com", "youtube-nocookie.com");
+                }
+                iframe.src = newSrc;
+            }
+        }
+
+        function insertImage(btn) {
+            const placeholder = btn.closest('.img-placeholder');
+            const url = prompt("Cole a URL da imagem aqui (ex: link do Discord, Imgur, etc):");
+            
+            if (url) {
+                const imgContainer = placeholder.parentElement;
+                
+                // Cria a imagem
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = "w-full rounded shadow-lg my-4";
+                
+                // Botão de editar para a imagem criada
+                const editBtn = document.createElement('button');
+                editBtn.className = "edit-controls absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded opacity-75 hover:opacity-100";
+                editBtn.innerText = "Trocar Imagem";
+                editBtn.onclick = function() {
+                    const newUrl = prompt("Nova URL:", img.src);
+                    if(newUrl) img.src = newUrl;
+                };
+
+                const wrapper = document.createElement('div');
+                wrapper.className = "relative group";
+                wrapper.appendChild(img);
+                wrapper.appendChild(editBtn);
+
+                imgContainer.innerHTML = ""; // Limpa o placeholder
+                imgContainer.appendChild(wrapper);
+            }
+        }
+
+        function downloadUpdatedHTML() {
+            // Clona o documento para limpar o estado de edição antes de salvar
+            const clone = document.documentElement.cloneNode(true);
+            
+            // Remove classes de edição e contentEditable
+            const editables = clone.querySelectorAll('.editable-active');
+            editables.forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.classList.remove('editable-active');
+            });
+
+            // Oculta painel admin e modal no HTML salvo
+            const adminPanel = clone.querySelector('#adminPanel');
+            if(adminPanel) adminPanel.classList.add('hidden');
+            
+            const loginModal = clone.querySelector('#loginModal');
+            if(loginModal) loginModal.classList.add('hidden');
+
+            // Remove a classe do body
+            clone.querySelector('body').classList.remove('admin-mode');
+
+            const htmlContent = clone.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'historia-nevoa-atualizada.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
