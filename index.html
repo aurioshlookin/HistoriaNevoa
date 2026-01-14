@@ -65,6 +65,16 @@
             cursor: text;
         }
         
+        /* Ocultar controles de edição por padrão */
+        .edit-controls {
+            display: none !important;
+        }
+        
+        /* Mostrar controles apenas quando logado */
+        body.admin-mode .edit-controls {
+            display: inline-block !important;
+        }
+        
         /* Placeholder de Imagem */
         .img-placeholder {
             border: 2px dashed #475569;
@@ -140,7 +150,7 @@
                         <p class="text-xs text-slate-500">Autor & Historiador</p>
                     </div>
                 </div>
-                <button onclick="openLoginModal()" class="text-slate-600 hover:text-sky-400 p-2" title="Área de Edição"><i class="fas fa-cog"></i></button>
+                <button id="loginBtn" onclick="openLoginModal()" class="text-slate-600 hover:text-sky-400 p-2" title="Área de Edição"><i class="fas fa-cog"></i></button>
             </div>
             
             <div id="adminPanel" class="hidden mt-4 pt-4 border-t border-slate-700">
@@ -148,7 +158,10 @@
                 <button onclick="saveCurrentChapter()" class="w-full bg-green-700 hover:bg-green-600 text-white text-xs font-bold py-2 px-2 rounded mb-2 transition-colors">
                     <i class="fas fa-save mr-1"></i> Salvar Capítulo Atual
                 </button>
-                <p class="text-[10px] text-slate-500 text-center">Salva as alterações do capítulo atual em um arquivo HTML.</p>
+                <button onclick="logout()" class="w-full bg-red-700 hover:bg-red-600 text-white text-xs font-bold py-2 px-2 rounded transition-colors">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Sair do Modo Edição
+                </button>
+                <p class="text-[10px] text-slate-500 text-center mt-2">Salva as alterações do capítulo atual em um arquivo HTML.</p>
             </div>
         </div>
     </aside>
@@ -195,7 +208,7 @@
                 const html = await response.text();
                 contentDiv.innerHTML = '<div class="fade-in">' + html + '</div>';
                 
-                // Se o modo admin estiver ativo, reativar editores
+                // Reaplicar estado de admin se necessário
                 if(document.body.classList.contains('admin-mode')) {
                     enableAdminMode();
                 }
@@ -264,23 +277,45 @@
         function checkLogin() {
             const p = document.getElementById('adminPassword').value;
             if (p === "igor123") {
-                document.body.classList.add('admin-mode');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                enableAdminMode();
-                closeLoginModal();
-                alert("Modo Edição: Agora você pode editar o capítulo carregado e salvá-lo individualmente.");
+                loginSuccess();
             } else {
                 alert("Senha incorreta.");
             }
         }
 
+        function loginSuccess() {
+            document.body.classList.add('admin-mode');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('loginBtn').classList.add('hidden'); // Esconde botão de engrenagem
+            enableAdminMode();
+            closeLoginModal();
+            alert("Modo Edição Ativado!");
+        }
+
+        function logout() {
+            document.body.classList.remove('admin-mode');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('loginBtn').classList.remove('hidden'); // Mostra botão de engrenagem
+            
+            // Remove editabilidade
+            const editables = document.querySelectorAll('.editable-text');
+            editables.forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.classList.remove('editable-active');
+            });
+            
+            alert("Você saiu do modo de edição.");
+        }
+
         function enableAdminMode() {
+            // Só ativa se a classe admin-mode estiver no body (verificação dupla)
+            if(!document.body.classList.contains('admin-mode')) return;
+
             const editables = document.querySelectorAll('.editable-text');
             editables.forEach(el => {
                 el.contentEditable = "true";
                 el.classList.add('editable-active');
             });
-            // Re-bind media buttons logic if needed
         }
 
         function editVideo(btn) {
@@ -300,26 +335,26 @@
             const url = prompt("URL da Imagem:");
             if (url) {
                 const imgContainer = placeholder.parentElement;
-                imgContainer.innerHTML = `<div class="relative group"><img src="${url}" class="w-full rounded shadow-lg my-4"><button onclick="this.parentElement.parentElement.innerHTML = createPlaceholderHTML()" class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded opacity-75 hover:opacity-100">Remover</button></div>`;
+                imgContainer.innerHTML = `<div class="relative group"><img src="${url}" class="w-full rounded shadow-lg my-4"><button onclick="this.parentElement.parentElement.innerHTML = createPlaceholderHTML()" class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded opacity-75 hover:opacity-100 edit-controls">Remover</button></div>`;
             }
         }
 
+        // Função auxiliar para recriar o placeholder se a imagem for removida
+        function createPlaceholderHTML() {
+            return `<div class="img-placeholder"><i class="fas fa-image text-3xl mb-2"></i><span class="text-sm">Espaço para Imagem</span><button class="edit-controls bg-blue-600 text-white text-xs px-3 py-1 rounded mt-2 hover:bg-blue-500" onclick="insertImage(this)">Adicionar Imagem</button></div>`;
+        }
+
         function saveCurrentChapter() {
-            // Salva apenas o conteúdo interno da div dynamic-content
             const content = document.getElementById('dynamic-content');
-            
-            // Limpa atributos de edição antes de salvar
             const clone = content.cloneNode(true);
+            
+            // Limpa atributos de edição
             clone.querySelectorAll('.editable-active').forEach(el => {
                 el.removeAttribute('contenteditable');
                 el.classList.remove('editable-active');
             });
 
-            // Extrai o HTML limpo (apenas o conteúdo do arquivo, sem a div wrapper 'fade-in' se possível)
-            // Como adicionamos <div class="fade-in"> no load, vamos pegar o innerHTML dela
             let htmlContent = clone.innerHTML;
-            
-            // Remove a div fade-in wrapper se ela existir na raiz do clone
             if(htmlContent.startsWith('<div class="fade-in">')) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = htmlContent;
@@ -331,7 +366,7 @@
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = currentPageName; // Salva com o nome do arquivo atual (ex: chapter1.html)
+            a.download = currentPageName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
