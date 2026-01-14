@@ -75,6 +75,21 @@
             margin: 1rem 0;
             flex-direction: column;
         }
+        
+        /* Estilos do submenu */
+        .sub-menu-btn {
+            padding-left: 2.5rem;
+            font-size: 0.85rem;
+            border-left: 2px solid #1e293b;
+        }
+        .sub-menu-btn:hover {
+            border-left-color: #38bdf8;
+        }
+        .sub-menu-container {
+            margin-left: 0.5rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body class="mist-bg text-slate-200 min-h-screen flex flex-col md:flex-row overflow-hidden">
@@ -103,12 +118,44 @@
             <button onclick="showPage('chapter1')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500">
                 <i class="fas fa-torii-gate w-6 text-center"></i> Cap. 1: O Início
             </button>
+            
             <div class="pt-2 pb-1">
                 <p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest editable-text">A Era Acqua</p>
             </div>
-            <button onclick="showPage('chapter2')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500">
-                <i class="fas fa-water w-6 text-center"></i> Cap. 2: Shodai Mizukami
+            
+            <!-- Botão Capítulo 2 com toggle -->
+            <button onclick="toggleSubMenu('submenu-chap2'); showPage('chapter2')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500 flex justify-between items-center">
+                <span><i class="fas fa-water w-6 text-center"></i> Cap. 2: Shodai Mizukami</span>
+                <i class="fas fa-chevron-down text-xs transition-transform" id="icon-submenu-chap2"></i>
             </button>
+            
+            <!-- Submenu Capítulo 2 -->
+            <div id="submenu-chap2" class="sub-menu-container hidden flex-col space-y-1">
+                <button onclick="scrollToSection('sec-2-1')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.1 Início do Mandato
+                </button>
+                <button onclick="scrollToSection('sec-2-2')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.2 Conflitos em Asoki
+                </button>
+                <button onclick="scrollToSection('sec-2-3')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.3 Torneio Sannin
+                </button>
+                <button onclick="scrollToSection('sec-2-4')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.4 Kami Summit
+                </button>
+                <button onclick="scrollToSection('sec-2-5')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.5 Brasileirão
+                </button>
+                <button onclick="scrollToSection('sec-2-6')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.6 Eleições
+                </button>
+                <button onclick="scrollToSection('sec-2-7')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.7 Exame Chunin
+                </button>
+                <button onclick="scrollToSection('sec-2-8')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">
+                    2.8 Segunda Guerra
+                </button>
+            </div>
         </nav>
 
         <!-- Área de Admin / Autor -->
@@ -255,7 +302,7 @@
                 <div class="space-y-12 text-slate-300 leading-relaxed text-lg">
                     
                     <!-- 2.1 -->
-                    <div>
+                    <div id="sec-2-1">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.1 Início do Mandato (08/09/2025)</h2>
                         
                          <!-- PLACEHOLDER DE IMAGEM 3 -->
@@ -281,7 +328,7 @@
                     </div>
 
                     <!-- 2.2 -->
-                    <div>
+                    <div id="sec-2-2">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.2 A Escalada dos Conflitos em Asoki</h2>
                         <!-- PLACEHOLDER DE IMAGEM 4 (Kraken/Batalha) -->
                         <div class="img-container">
@@ -338,7 +385,7 @@
                     </div>
 
                     <!-- 2.3 -->
-                    <div>
+                    <div id="sec-2-3">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.3 O Torneio dos Primeiros Sannin</h2>
                         <p class="mb-4 editable-text">Pouco depois, ocorreu o torneio que elegeria os primeiros sannin da Névoa. Os vencedores foram:</p>
                         <ul class="list-disc ml-6 space-y-2 text-sky-200">
@@ -351,7 +398,7 @@
                     </div>
 
                     <!-- 2.4 -->
-                    <div>
+                    <div id="sec-2-4">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.4 A Kami Summit</h2>
                          <!-- PLACEHOLDER DE IMAGEM 5 -->
                          <div class="img-container">
@@ -373,7 +420,7 @@
                     </div>
 
                     <!-- 2.5 -->
-                    <div>
+                    <div id="sec-2-5">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.5 O Primeiro Brasileirão (03/10)</h2>
                         <p class="mb-4 editable-text">Em 3 de outubro, Diabo e Prado organizaram o primeiro Brasileirão, um torneio que reuniu as melhores duplas de cada vila, além da Kuronami. A lista dos representantes era extensa:</p>
                         
@@ -435,10 +482,23 @@
                                 <p class="text-[10px] text-slate-500 text-center mt-1 editable-text">Um oferecimento FredL e Prado</p>
                             </div>
                         </div>
+
+                        <!-- Video do Vilão movido para cá -->
+                        <div class="bg-black/30 p-4 rounded mt-4">
+                             <div class="flex justify-between items-center mb-2">
+                                <h4 class="text-sm font-bold text-slate-400 mb-2 editable-text">Aula de PvP (Vilão)</h4>
+                                <button class="edit-controls bg-blue-600 text-white text-xs px-2 py-1 rounded ml-2" onclick="editVideo(this)">Editar Vídeo</button>
+                            </div>
+                            <iframe class="w-full h-64 md:h-80 rounded" src="https://www.youtube-nocookie.com/embed/UFBmTtOlnI8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                             <div class="text-center mt-2">
+                                <a href="https://www.youtube.com/watch?v=UFBmTtOlnI8" target="_blank" class="text-xs text-sky-400 hover:underline"><i class="fas fa-external-link-alt"></i> Assistir no YouTube</a>
+                            </div>
+                            <p class="mt-2 text-xs text-slate-400 italic editable-text">Treinamento realizado pelo vilao, ainda hoje muito válido para novatos</p>
+                        </div>
                     </div>
 
                     <!-- 2.6 -->
-                    <div>
+                    <div id="sec-2-6">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.6 O Início das Eleições</h2>
                         <p class="editable-text">Logo se iniciariam as eleições. Pensei em me candidatar, mas percebi que não teria tempo suficiente para me dedicar ao cargo.</p>
                         <p class="mt-4 editable-text">Os candidatos ao conselho foram:</p>
@@ -474,7 +534,7 @@
                     </div>
 
                     <!-- 2.7 -->
-                    <div>
+                    <div id="sec-2-7">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.7 O Primeiro Exame Chunin (01/11)</h2>
                         <p class="mb-4 editable-text">O dia 1º de novembro marcou o primeiro Exame Chunin. Minha equipe era formada por Needle, respeitado membro da ANBU, e Ollive, uma ninja médica em ascensão e sua esposa. A primeira fase foi tranquila, mas na segunda, onde estratégia e cooperação eram fundamentais, nossa equipe acabou desclassificada. Ainda assim, assisti com orgulho à fase final, onde os talentos da vila brilharam. Foram promovidos a Chunin:</p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm font-mono text-sky-200 bg-slate-800 p-4 rounded">
@@ -511,22 +571,10 @@
                                 <p class="text-[10px] text-slate-500 text-center mt-1 editable-text">Terceira fase do Exame Chunin</p>
                             </div>
                         </div>
-
-                         <div class="bg-black/30 p-4 rounded mt-4">
-                             <div class="flex justify-between items-center mb-2">
-                                <h4 class="text-sm font-bold text-slate-400 mb-2 editable-text">Aula de PvP (Vilão)</h4>
-                                <button class="edit-controls bg-blue-600 text-white text-xs px-2 py-1 rounded ml-2" onclick="editVideo(this)">Editar Vídeo</button>
-                            </div>
-                            <iframe class="w-full h-64 md:h-80 rounded" src="https://www.youtube-nocookie.com/embed/UFBmTtOlnI8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                             <div class="text-center mt-2">
-                                <a href="https://www.youtube.com/watch?v=UFBmTtOlnI8" target="_blank" class="text-xs text-sky-400 hover:underline"><i class="fas fa-external-link-alt"></i> Assistir no YouTube</a>
-                            </div>
-                            <p class="mt-2 text-xs text-slate-400 italic editable-text">Treinamento realizado pelo vilao, ainda hoje muito válido para novatos</p>
-                        </div>
                     </div>
 
                     <!-- 2.8 -->
-                    <div>
+                    <div id="sec-2-8">
                         <h2 class="text-2xl font-bold text-white mb-4 border-l-4 border-sky-500 pl-4 editable-text">2.8 A Segunda Grande Guerra Ninja (02/11)</h2>
                         <p class="mb-4 editable-text">No dia seguinte, 2 de novembro, ocorreu a segunda grande guerra ninja. Dessa vez, nossa preparação foi muito maior do que na primeira, e organizamos nossas defesas de forma estratégica. Permanecemos posicionados na floresta, criando emboscadas e rotas de fuga. Durante o caos das batalhas, um acontecimento inesperado marcou esse conflito: Glut, membro da Kuronami que antes era conhecida por confrontar shinobi da Névoa, apareceu no campo de batalha. Em vez de hostilidade, encontramos nela disposição para cooperar. Decidimos perdoá-la ali mesmo, no meio da guerra, permitindo que lutasse ao nosso lado. Sua ajuda foi decisiva em diversos confrontos.</p>
                         <p class="mb-4 editable-text">Com nossas forças coordenadas e o apoio inesperado de Glut, avançamos com segurança e firmeza, garantindo a vitória e conquistando ao final nossa tão desejada Armadura de Guerra.</p>
@@ -582,6 +630,39 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('-translate-x-full');
+        }
+        
+        // --- FUNÇÕES DO SUBMENU ---
+        function toggleSubMenu(menuId) {
+            const menu = document.getElementById(menuId);
+            const icon = document.getElementById('icon-' + menuId);
+            
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+                if(icon) icon.classList.add('rotate-180');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+                if(icon) icon.classList.remove('rotate-180');
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            // Garante que o capítulo 2 esteja visível
+            showPage('chapter2');
+            
+            // Pequeno delay para garantir que o showPage terminou de processar
+            setTimeout(() => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+            
+            if(window.innerWidth < 768) {
+                toggleSidebar();
+            }
         }
 
         // --- SISTEMA DE LOGIN E EDIÇÃO ---
