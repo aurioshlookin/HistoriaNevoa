@@ -41,6 +41,10 @@
         body { min-height: 100vh; overflow-x: hidden; }
         #content-area { height: 100vh; overflow-y: auto; }
 
+        /* Controles de Imagem (Admin) */
+        .img-controls { opacity: 0; transition: opacity 0.2s; }
+        .custom-img-wrapper:hover .img-controls { opacity: 1; }
+
         @media (max-width: 768px) {
             #content-area { height: auto; overflow-y: visible; padding-top: 20px; padding-bottom: 80px; }
             #sidebar { position: fixed; height: 100%; width: 80%; max-width: 300px; }
@@ -80,35 +84,61 @@
                 <p class="text-xs text-green-400 font-bold mb-2 flex items-center"><i class="fas fa-circle text-[8px] mr-2"></i> ADMIN ONLINE</p>
                 <p class="text-[10px] text-slate-400 mb-2 truncate" id="userEmailDisplay"></p>
                 
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <button onclick="openCreateChapterModal()" class="bg-blue-700 hover:bg-blue-600 text-white text-[10px] font-bold py-2 px-1 rounded transition-colors text-center">
-                        <i class="fas fa-plus mr-1"></i> Criar/Editar
-                    </button>
-                    <button onclick="saveChanges()" class="bg-green-700 hover:bg-green-600 text-white text-[10px] font-bold py-2 px-1 rounded transition-colors text-center">
-                        <i class="fas fa-save mr-1"></i> Salvar Edição
+                <div class="mb-2">
+                    <button onclick="openCreateChapterModal()" class="w-full bg-blue-700 hover:bg-blue-600 text-white text-[10px] font-bold py-2 px-1 rounded transition-colors text-center">
+                        <i class="fas fa-plus mr-1"></i> Criar/Editar Capítulo
                     </button>
                 </div>
                 
-                <button id="globalUploadBtn" onclick="window.insertImage(this)" class="w-full bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold py-2 px-2 rounded mb-2 transition-colors flex items-center justify-center">
-                    <i class="fas fa-image mr-2"></i> Adicionar Imagem Global
-                </button>
-                <input type="file" id="imageUploadInput" class="hidden" accept="image/*" onchange="handleImageUpload(this)">
-
                 <button onclick="handleLogout()" class="w-full bg-red-900/50 hover:bg-red-900 text-red-300 text-xs py-1 rounded transition-colors mt-2">Sair</button>
             </div>
         </div>
     </aside>
+
+    <!-- Floating Admin Toolbar -->
+    <div id="adminToolbar" class="hidden fixed bottom-6 right-6 z-50 flex-col space-y-2">
+        <button onclick="saveChanges()" class="bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-xl transition-transform hover:scale-110" title="Salvar Alterações no Texto">
+            <i class="fas fa-save text-xl"></i>
+        </button>
+        <button onclick="openImageUrlModal()" class="bg-purple-600 hover:bg-purple-500 text-white p-4 rounded-full shadow-xl transition-transform hover:scale-110" title="Adicionar Imagem">
+            <i class="fas fa-image text-xl"></i>
+        </button>
+    </div>
 
     <!-- Modal Login -->
     <div id="loginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
         <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-80 m-4">
             <h3 class="text-xl font-bold text-white mb-4">Acesso Admin</h3>
             <input type="email" id="adminEmail" placeholder="Email" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white mb-2 focus:border-sky-500">
-            <input type="password" id="adminPassword" placeholder="Senha" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white mb-4 focus:border-sky-500">
+            <input type="password" id="adminPassword" placeholder="Senha" onkeyup="if(event.key === 'Enter') handleLogin()" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white mb-4 focus:border-sky-500">
             <div id="loginError" class="text-red-500 text-xs mb-3 hidden"></div>
             <div class="flex justify-end space-x-2">
                 <button onclick="closeLoginModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancelar</button>
                 <button onclick="handleLogin()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded font-bold" id="confirmLoginBtn">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Imagem (URL + Descrição) -->
+    <div id="imageUrlModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-[90%] max-w-md m-4">
+            <h3 class="text-xl font-bold text-white mb-4">Adicionar Imagem</h3>
+            
+            <div class="mb-4">
+                <label class="block text-xs text-slate-400 mb-1">Link da Imagem (URL)</label>
+                <input type="text" id="imgUrlInput" placeholder="https://..." class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-sm">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-xs text-slate-400 mb-1">Descrição / Legenda</label>
+                <input type="text" id="imgDescInput" placeholder="Ex: Batalha no Vale..." class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-sm">
+            </div>
+            
+            <p class="text-xs text-sky-400 mb-4"><i class="fas fa-info-circle"></i> A imagem será inserida onde você clicou no texto.</p>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeImageUrlModal()" class="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancelar</button>
+                <button onclick="confirmInsertImage()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded font-bold text-sm">Inserir</button>
             </div>
         </div>
     </div>
@@ -145,7 +175,7 @@
             </div>
 
             <div class="flex-1 flex flex-col mb-4">
-                <label class="block text-xs text-slate-400 mb-1">Conteúdo HTML</label>
+                <label class="block text-xs text-slate-400 mb-1">Conteúdo HTML (Edição Avançada)</label>
                 <textarea id="newChapterHtml" class="flex-1 bg-slate-900 border border-slate-600 rounded p-4 text-white font-mono text-xs focus:border-sky-500 resize-none" placeholder="<div><h1>Título</h1><p>Conteúdo...</p></div>"></textarea>
             </div>
 
@@ -197,11 +227,38 @@
             }
         }
 
-        window.insertImage = (btnElement) => {
-            window.currentImageButton = btnElement;
-            const input = document.getElementById('imageUploadInput');
-            input.value = '';
-            input.click();
+        // Funções para o Modal de Imagem
+        function openImageUrlModal() {
+            document.getElementById('imageUrlModal').classList.remove('hidden');
+            document.getElementById('imgUrlInput').focus();
+        }
+
+        function closeImageUrlModal() {
+            document.getElementById('imageUrlModal').classList.add('hidden');
+            document.getElementById('imgUrlInput').value = '';
+            document.getElementById('imgDescInput').value = '';
+        }
+
+        // Controles de Imagem (Mover/Deletar) - Definidos no escopo global
+        window.moveImgUp = (btn) => {
+            const wrapper = btn.closest('.custom-img-wrapper');
+            if (wrapper && wrapper.previousElementSibling) {
+                wrapper.parentNode.insertBefore(wrapper, wrapper.previousElementSibling);
+            }
+        };
+
+        window.moveImgDown = (btn) => {
+            const wrapper = btn.closest('.custom-img-wrapper');
+            if (wrapper && wrapper.nextElementSibling) {
+                wrapper.parentNode.insertBefore(wrapper.nextElementSibling, wrapper);
+            }
+        };
+
+        window.deleteImg = (btn) => {
+            if(confirm("Tem certeza que deseja excluir esta imagem?")) {
+                const wrapper = btn.closest('.custom-img-wrapper');
+                if(wrapper) wrapper.remove();
+            }
         };
 
         window.loadContent = (id) => console.log("Aguardando módulo...", id);
@@ -212,7 +269,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, query } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC33QzesuQgO7Qtu6q6ci1EL1PnViPxub4",
@@ -227,11 +283,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         let currentChapterId = 'intro';
         let currentUser = null;
-        let chaptersCache = {}; // Cache local dos capítulos
+        let chaptersCache = {}; 
 
         // --- GLOBAL EXPORTS ---
         
@@ -255,6 +310,83 @@
             if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
         };
 
+        // Função Confirmar Imagem
+        window.confirmInsertImage = () => {
+            if (!currentUser) {
+                closeImageUrlModal();
+                return alert("Erro: Você precisa estar logado como Admin.");
+            }
+
+            const url = document.getElementById('imgUrlInput').value.trim();
+            const desc = document.getElementById('imgDescInput').value.trim();
+            
+            if (!url) return alert("Por favor, insira uma URL válida.");
+
+            // Cria o HTML da imagem com controles (inicialmente sem os controles visuais, o JS adiciona depois se precisar)
+            // Mas para facilitar, já estruturamos de forma que o injectAdminControls possa pegar depois.
+            // Para inserção dinâmica, criamos o elemento completo.
+            
+            const controlsHtml = `
+                <div class="img-controls absolute top-2 right-2 flex space-x-1 bg-black/50 p-1 rounded backdrop-blur-sm">
+                    <button onclick="moveImgUp(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-up"></i></button>
+                    <button onclick="moveImgDown(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-down"></i></button>
+                    <button onclick="deleteImg(this)" class="p-1 hover:text-red-400 text-white"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+
+            const imgHtml = `
+                <div class="custom-img-wrapper relative group my-6 text-center">
+                    <img src="${url}" class="w-full rounded shadow-lg border border-slate-700">
+                    ${desc ? `<p class="text-sm text-slate-400 mt-2 italic editable-text">${desc}</p>` : ''}
+                    ${controlsHtml}
+                </div>
+            `;
+
+            const wrapper = document.querySelector('.editable-wrapper');
+            if (wrapper) {
+                wrapper.focus(); // Garante foco
+                if (document.queryCommandSupported('insertHTML')) {
+                    document.execCommand('insertHTML', false, imgHtml);
+                } else {
+                    // Fallback: append at end
+                    wrapper.innerHTML += imgHtml;
+                }
+            } else {
+                alert("Abra um capítulo para inserir a imagem.");
+            }
+            
+            closeImageUrlModal();
+        };
+
+        // Função auxiliar para injetar controles em imagens já existentes ao carregar ou logar
+        function injectAdminControls() {
+            if (!currentUser) return;
+            const images = document.querySelectorAll('.editable-wrapper img');
+            
+            images.forEach(img => {
+                // Verifica se já está dentro de um wrapper nosso
+                if (img.closest('.custom-img-wrapper')) return; 
+                if (img.closest('.img-placeholder')) return; // Ignora placeholders antigos não usados
+
+                // Envolve imagens soltas (legado) em um wrapper com controles
+                const wrapper = document.createElement('div');
+                wrapper.className = "custom-img-wrapper relative group my-6 text-center";
+                
+                img.parentNode.insertBefore(wrapper, img);
+                wrapper.appendChild(img);
+                
+                // Adiciona controles
+                const controls = document.createElement('div');
+                controls.className = "img-controls absolute top-2 right-2 flex space-x-1 bg-black/50 p-1 rounded backdrop-blur-sm";
+                controls.innerHTML = `
+                    <button onclick="moveImgUp(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-up"></i></button>
+                    <button onclick="moveImgDown(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-down"></i></button>
+                    <button onclick="deleteImg(this)" class="p-1 hover:text-red-400 text-white"><i class="fas fa-trash"></i></button>
+                `;
+                wrapper.appendChild(controls);
+            });
+        }
+
         window.loadContent = async (chapterId) => {
             currentChapterId = chapterId;
             const container = document.getElementById('dynamic-content');
@@ -262,7 +394,6 @@
 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('border-sky-500', 'bg-slate-800', 'text-sky-300'));
             
-            // Tenta achar o botão ativo para destacar
             const activeBtn = document.getElementById(`btn-${chapterId}`);
             if(activeBtn) activeBtn.classList.add('border-sky-500', 'bg-slate-800', 'text-sky-300');
 
@@ -270,19 +401,31 @@
             document.querySelectorAll('[id^="arrow-"]').forEach(el => el.classList.add('opacity-0'));
 
             try {
-                // Tenta cache primeiro, senão busca
                 let data = chaptersCache[chapterId];
                 if (!data) {
                     const docRef = doc(db, "chapters", chapterId);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         data = docSnap.data();
-                        chaptersCache[chapterId] = data; // Atualiza cache
+                        chaptersCache[chapterId] = data; 
                     }
                 }
 
                 if (data) {
-                    container.innerHTML = `<div class="fade-in editable-wrapper">${data.html}</div>`;
+                    let cleanHtml = data.html;
+                    // Limpeza de legado
+                    if (cleanHtml.includes('fa-spinner') && cleanHtml.includes('Carregando')) {
+                        cleanHtml = cleanHtml.replace(/<i class="fas fa-spinner fa-spin"><\/i>\s*Carregando\.\.\./g, 'Adicionar Imagem');
+                        cleanHtml = cleanHtml.replace(/disabled=""/g, '').replace(/disabled/g, '');
+                    }
+
+                    container.innerHTML = `<div class="fade-in editable-wrapper outline-none" ${currentUser ? 'contenteditable="true"' : ''}>${cleanHtml}</div>`;
+                    
+                    if(currentUser) {
+                        injectAdminControls();
+                        container.querySelector('.editable-wrapper').classList.add('editable-content');
+                    }
+
                     detectAndBuildSubMenu(chapterId);
                 } else {
                     container.innerHTML = `<div class="text-center mt-10"><p class="text-slate-400">Capítulo não encontrado.</p></div>`;
@@ -299,13 +442,26 @@
 
         window.saveChanges = async () => {
             if (!currentUser) return alert("Erro: Login de administrador necessário para salvar.");
-            const content = document.querySelector('.editable-wrapper').innerHTML;
+            
+            // Clona o conteúdo para limpar os controles antes de salvar
+            const wrapper = document.querySelector('.editable-wrapper');
+            const clone = wrapper.cloneNode(true);
+            
+            // Remove os controles de admin do clone
+            clone.querySelectorAll('.img-controls').forEach(el => el.remove());
+            
+            // Opcional: Remove classes de edição temporárias se houver
+            // Mas mantemos a estrutura wrapper para re-injeção futura
+            
+            const content = clone.innerHTML;
+            
             try {
-                // Atualiza apenas o HTML, mantendo os metadados existentes
                 await setDoc(doc(db, "chapters", currentChapterId), { html: content, lastUpdated: new Date(), updatedBy: currentUser.email }, { merge: true });
                 alert("Salvo na nuvem com sucesso!");
-                // Atualiza cache
                 if(chaptersCache[currentChapterId]) chaptersCache[currentChapterId].html = content;
+                
+                // Re-injeta controles no DOM original caso tenham se perdido (embora não devam)
+                injectAdminControls();
             } catch (e) { alert("Erro ao salvar: " + e.message); }
         };
 
@@ -336,11 +492,7 @@
 
             try {
                 await setDoc(doc(db, "chapters", id), chapterData);
-                
-                // Atualiza cache
                 chaptersCache[id] = chapterData;
-
-                // Recarrega o menu
                 await fetchAndRenderMenu();
                 
                 alert("Capítulo salvo com sucesso!");
@@ -355,71 +507,7 @@
             }
         };
 
-        window.handleImageUpload = async (input) => {
-            if (!input.files.length) return;
-            if (!currentUser) {
-                input.value = '';
-                return alert("Erro: Você precisa estar logado como Admin para fazer upload.");
-            }
-            
-            const file = input.files[0];
-            const metadata = { contentType: file.type };
-            const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            
-            const targetBtn = window.currentImageButton;
-            const originalText = targetBtn ? targetBtn.innerHTML : null;
-            
-            if (targetBtn) {
-                targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
-                targetBtn.disabled = true;
-            } else {
-                const globalBtn = document.getElementById('globalUploadBtn');
-                if(globalBtn) globalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            }
-
-            try {
-                const snapshot = await uploadBytes(storageRef, file, metadata);
-                const url = await getDownloadURL(storageRef);
-                
-                if (targetBtn) {
-                    // Se foi chamado por um botão placeholder
-                    const container = targetBtn.closest('.img-placeholder');
-                    if (container) {
-                        container.outerHTML = `<img src="${url}" class="w-full rounded shadow-lg border border-slate-700 fade-in my-4">`;
-                    } else {
-                        // Fallback
-                        const wrapper = document.querySelector('.editable-wrapper');
-                        if (wrapper) {
-                            wrapper.focus();
-                            document.execCommand('insertHTML', false, `<div class="my-4"><img src="${url}" class="w-full rounded shadow-lg border border-slate-700"></div>`);
-                            
-                            // Restaura o botão global se foi ele
-                            if(targetBtn.id === 'globalUploadBtn') {
-                                targetBtn.innerHTML = originalText;
-                                targetBtn.disabled = false;
-                            }
-                        }
-                    }
-                    window.currentImageButton = null; 
-                }
-            } catch (error) { 
-                console.error("Upload Error:", error);
-                alert("Erro no upload: " + error.message);
-                if (targetBtn) {
-                    targetBtn.innerHTML = originalText;
-                    targetBtn.disabled = false;
-                }
-            } finally { 
-                const globalBtn = document.getElementById('globalUploadBtn');
-                if (globalBtn && globalBtn.innerHTML.includes('fa-spinner')) {
-                     globalBtn.innerHTML = '<i class="fas fa-image mr-2"></i> Adicionar Imagem Global';
-                }
-                input.value = ''; 
-            }
-        };
-
         window.openCreateChapterModal = async () => {
-            // Tenta preencher com dados existentes se estiver editando o capítulo atual
             if (currentChapterId && chaptersCache[currentChapterId]) {
                 const data = chaptersCache[currentChapterId];
                 document.getElementById('newChapterId').value = currentChapterId;
@@ -427,9 +515,12 @@
                 document.getElementById('newChapterIcon').value = data.icon || 'fa-book';
                 document.getElementById('newChapterOrder').value = data.order || 999;
                 document.getElementById('newChapterEra').value = data.era || '';
-                document.getElementById('newChapterHtml').value = data.html || '';
+                // Limpa controles do HTML raw também se for editar por lá
+                let rawHtml = data.html;
+                // Uma limpeza simples de string para evitar poluição visual no textarea
+                rawHtml = rawHtml.replace(/<div class="img-controls.*?<\/div>/g, '');
+                document.getElementById('newChapterHtml').value = rawHtml;
             } else {
-                // Limpa se for novo ou não encontrado
                 document.getElementById('newChapterId').value = '';
                 document.getElementById('newChapterTitle').value = '';
                 document.getElementById('newChapterIcon').value = 'fa-book';
@@ -440,12 +531,18 @@
             document.getElementById('chapterModal').classList.remove('hidden');
         };
 
-        window.enableEditing = () => { const w = document.querySelector('.editable-wrapper'); if(w) { w.contentEditable = "true"; w.classList.add('editable-content'); w.focus(); } };
+        window.enableEditing = () => { 
+            const w = document.querySelector('.editable-wrapper'); 
+            if(w) { 
+                w.contentEditable = "true"; 
+                w.classList.add('editable-content'); 
+                injectAdminControls(); // Garante que imagens antigas ganhem controles
+            } 
+        };
 
         async function fetchAndRenderMenu() {
             document.getElementById('nav-loading').style.display = 'block';
             try {
-                // Agora buscamos SEMPRE da coleção 'chapters', ignorando o meta/menu antigo
                 const q = query(collection(db, "chapters"));
                 const querySnapshot = await getDocs(q);
                 let chapters = [];
@@ -453,10 +550,9 @@
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     chapters.push({ id: doc.id, ...data });
-                    chaptersCache[doc.id] = data; // Popula o cache
+                    chaptersCache[doc.id] = data; 
                 });
                 
-                // ORDENAÇÃO: Usa o campo 'order' (número) que adicionamos
                 chapters.sort((a, b) => (a.order || 999) - (b.order || 999));
                 
                 const nav = document.getElementById('dynamic-nav');
@@ -464,12 +560,22 @@
                 
                 if (chapters.length === 0) {
                      nav.innerHTML = `<div class="text-center text-slate-500 text-xs p-4">Nenhum capítulo encontrado.</div>`;
+                } else {
+                    // Carregamento inteligente inicial
+                    const firstChapterId = chapters[0].id;
+                    const introExists = chapters.find(c => c.id === 'intro');
+                    
+                    // Se estivermos no "intro" padrão e ele não existir na lista, ou se for o carregamento inicial, carrega o primeiro da lista
+                    if (currentChapterId === 'intro' && !introExists) {
+                        window.loadContent(firstChapterId);
+                    } else if (currentChapterId === 'intro' && document.getElementById('dynamic-content').innerHTML.includes('Conectando')) {
+                        window.loadContent('intro');
+                    }
                 }
 
                 let currentEra = '';
 
                 chapters.forEach(item => {
-                    // Lógica de Era/Separador
                     if (item.era && item.era !== currentEra) {
                         currentEra = item.era;
                         nav.innerHTML += `<div class="pt-4 pb-1"><p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1 mb-1">${currentEra}</p></div>`;
@@ -487,13 +593,9 @@
 
                 document.getElementById('nav-loading').style.display = 'none';
                 
-                // Se estiver no intro ou em algum capitulo, recarrega o conteúdo visual se não estiver carregado
                 if (currentChapterId && chaptersCache[currentChapterId]) {
-                    // Opcional: só para garantir destaque no menu
                     const activeBtn = document.getElementById(`btn-${currentChapterId}`);
                     if(activeBtn) activeBtn.classList.add('border-sky-500', 'bg-slate-800', 'text-sky-300');
-                } else if (chapters.length > 0) {
-                    window.loadContent(chapters[0].id);
                 }
 
             } catch (e) {
@@ -508,7 +610,6 @@
             if (!subContainer) return;
 
             const content = document.getElementById('dynamic-content');
-            // Detecta apenas H2 para o submenu
             const headers = content.querySelectorAll('h2');
             
             if (headers.length > 0) {
@@ -538,15 +639,32 @@
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('loginBtn').classList.add('hidden');
                 document.getElementById('userEmailDisplay').textContent = user.email;
+                document.getElementById('adminToolbar').classList.remove('hidden');
+                document.getElementById('adminToolbar').classList.add('flex');
+                
+                // Ativa edição e controles se já houver conteúdo carregado
+                const content = document.querySelector('.editable-wrapper');
+                if(content) {
+                    content.contentEditable = "true";
+                    content.classList.add('editable-content');
+                    injectAdminControls();
+                }
             } else {
                 document.getElementById('adminPanel').classList.add('hidden');
                 document.getElementById('loginBtn').classList.remove('hidden');
+                document.getElementById('adminToolbar').classList.add('hidden');
+                document.getElementById('adminToolbar').classList.remove('flex');
+                
                 const content = document.getElementById('dynamic-content');
-                if(content) content.contentEditable = "false";
+                if(content) {
+                    const wrapper = content.querySelector('.editable-wrapper');
+                    if(wrapper) wrapper.contentEditable = "false";
+                    // Remove controles visuais ao deslogar
+                    document.querySelectorAll('.img-controls').forEach(el => el.remove());
+                }
             }
         });
 
-        // Inicializa
         fetchAndRenderMenu();
 
     </script>
