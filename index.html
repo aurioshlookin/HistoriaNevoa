@@ -89,14 +89,12 @@
                     </button>
                 </div>
                 
-                <button onclick="document.getElementById('imageUploadInput').click()" class="w-full bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold py-2 px-2 rounded mb-2 transition-colors flex items-center justify-center">
-                    <i class="fas fa-image mr-2"></i> Adicionar Imagem
+                <button id="globalUploadBtn" onclick="window.insertImage(this)" class="w-full bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold py-2 px-2 rounded mb-2 transition-colors flex items-center justify-center">
+                    <i class="fas fa-image mr-2"></i> Adicionar Imagem Global
                 </button>
                 <input type="file" id="imageUploadInput" class="hidden" accept="image/*" onchange="handleImageUpload(this)">
 
                 <button onclick="handleLogout()" class="w-full bg-red-900/50 hover:bg-red-900 text-red-300 text-xs py-1 rounded transition-colors mt-2">Sair</button>
-                
-                <button onclick="seedDatabase()" class="w-full text-[9px] text-slate-600 mt-4 hover:text-slate-400">⚠️ Restaurar Padrão</button>
             </div>
         </div>
     </aside>
@@ -117,30 +115,45 @@
 
     <!-- Modal Criar/Editar Capítulo -->
     <div id="chapterModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-[90%] max-w-2xl h-[80vh] flex flex-col m-4">
+        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-[90%] max-w-2xl h-[90vh] flex flex-col m-4">
             <h3 class="text-xl font-bold text-white mb-4">Gerenciar Capítulo</h3>
             
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">ID do Capítulo (ex: chapter4)</label>
-                    <input type="text" id="newChapterId" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500">
+                    <label class="block text-xs text-slate-400 mb-1">ID (Único)</label>
+                    <input type="text" id="newChapterId" placeholder="ex: chapter1" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Título do Menu</label>
-                    <input type="text" id="newChapterTitle" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500">
+                    <input type="text" id="newChapterTitle" placeholder="ex: O Início" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Ícone (FontAwesome)</label>
+                    <input type="text" id="newChapterIcon" placeholder="fa-scroll" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Ordem (Número)</label>
+                    <input type="number" id="newChapterOrder" placeholder="1" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Era / Grupo (Opcional)</label>
+                    <input type="text" id="newChapterEra" placeholder="ex: Era Acqua" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
                 </div>
             </div>
 
             <div class="flex-1 flex flex-col mb-4">
-                <label class="block text-xs text-slate-400 mb-1">Código HTML do Capítulo</label>
+                <label class="block text-xs text-slate-400 mb-1">Conteúdo HTML</label>
                 <textarea id="newChapterHtml" class="flex-1 bg-slate-900 border border-slate-600 rounded p-4 text-white font-mono text-xs focus:border-sky-500 resize-none" placeholder="<div><h1>Título</h1><p>Conteúdo...</p></div>"></textarea>
             </div>
 
             <div class="flex justify-between items-center">
-                <p class="text-xs text-slate-500">Isso atualizará o banco de dados e o menu.</p>
+                <p class="text-xs text-slate-500">Configure a ordem e a Era para organizar o menu.</p>
                 <div class="flex space-x-2">
                     <button onclick="closeChapterModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancelar</button>
-                    <button onclick="saveChapterToDb()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-bold">Salvar Capítulo</button>
+                    <button id="saveChapterBtn" onclick="saveChapterToDb()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-bold">Salvar Capítulo</button>
                 </div>
             </div>
         </div>
@@ -158,7 +171,6 @@
 
     <!-- Global Helpers Script (Standard JS) -->
     <script>
-        // Funções de UI Globais
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('-translate-x-full'); 
         }
@@ -171,6 +183,10 @@
             document.getElementById('loginModal').classList.add('hidden'); 
         }
 
+        function closeChapterModal() {
+            document.getElementById('chapterModal').classList.add('hidden');
+        }
+
         function toggleSub(id) { 
             const el = document.getElementById(id); 
             if(el) {
@@ -181,7 +197,13 @@
             }
         }
 
-        // Placeholders para evitar erros antes do módulo carregar
+        window.insertImage = (btnElement) => {
+            window.currentImageButton = btnElement;
+            const input = document.getElementById('imageUploadInput');
+            input.value = '';
+            input.click();
+        };
+
         window.loadContent = (id) => console.log("Aguardando módulo...", id);
     </script>
 
@@ -189,7 +211,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, query } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
         const firebaseConfig = {
@@ -209,14 +231,7 @@
 
         let currentChapterId = 'intro';
         let currentUser = null;
-        let menuStructure = [
-            { id: 'intro', title: 'Introdução', icon: 'fa-scroll' },
-            { id: 'chapter1', title: 'Cap. 1: O Início', icon: 'fa-torii-gate' },
-            { separator: 'A Era Acqua' },
-            { id: 'chapter2', title: 'Cap. 2: Shodai Mizukami', icon: 'fa-water' }, 
-            { separator: 'A Era Kirisaki' },
-            { id: 'chapter3', title: 'Cap. 3: Nidaime Mizukami', icon: 'fa-spider' }
-        ];
+        let chaptersCache = {}; // Cache local dos capítulos
 
         // --- GLOBAL EXPORTS ---
         
@@ -246,20 +261,31 @@
             container.innerHTML = '<div class="flex flex-col items-center justify-center h-64 fade-in"><i class="fas fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i><p class="text-slate-400">Buscando pergaminho...</p></div>';
 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('border-sky-500', 'bg-slate-800', 'text-sky-300'));
-            // Fecha todos os submenus ao trocar de capítulo
+            
+            // Tenta achar o botão ativo para destacar
+            const activeBtn = document.getElementById(`btn-${chapterId}`);
+            if(activeBtn) activeBtn.classList.add('border-sky-500', 'bg-slate-800', 'text-sky-300');
+
             document.querySelectorAll('.sub-menu-container').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('[id^="arrow-"]').forEach(el => el.classList.add('opacity-0'));
 
             try {
-                const docRef = doc(db, "chapters", chapterId);
-                const docSnap = await getDoc(docRef);
+                // Tenta cache primeiro, senão busca
+                let data = chaptersCache[chapterId];
+                if (!data) {
+                    const docRef = doc(db, "chapters", chapterId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        data = docSnap.data();
+                        chaptersCache[chapterId] = data; // Atualiza cache
+                    }
+                }
 
-                if (docSnap.exists()) {
-                    const html = docSnap.data().html;
-                    container.innerHTML = `<div class="fade-in editable-wrapper">${html}</div>`;
+                if (data) {
+                    container.innerHTML = `<div class="fade-in editable-wrapper">${data.html}</div>`;
                     detectAndBuildSubMenu(chapterId);
                 } else {
-                    container.innerHTML = `<div class="text-center mt-10"><p class="text-slate-400">Capítulo não encontrado.</p><button onclick="seedDatabase()" class="text-sky-400 underline mt-2 text-sm">Restaurar Dados</button></div>`;
+                    container.innerHTML = `<div class="text-center mt-10"><p class="text-slate-400">Capítulo não encontrado.</p></div>`;
                 }
                 
                 if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -272,95 +298,208 @@
         };
 
         window.saveChanges = async () => {
-            if (!currentUser) return alert("Login necessário.");
+            if (!currentUser) return alert("Erro: Login de administrador necessário para salvar.");
             const content = document.querySelector('.editable-wrapper').innerHTML;
             try {
+                // Atualiza apenas o HTML, mantendo os metadados existentes
                 await setDoc(doc(db, "chapters", currentChapterId), { html: content, lastUpdated: new Date(), updatedBy: currentUser.email }, { merge: true });
-                alert("Salvo na nuvem!");
+                alert("Salvo na nuvem com sucesso!");
+                // Atualiza cache
+                if(chaptersCache[currentChapterId]) chaptersCache[currentChapterId].html = content;
             } catch (e) { alert("Erro ao salvar: " + e.message); }
         };
 
         window.saveChapterToDb = async () => {
-            if (!currentUser) return alert("Login necessário.");
-            const id = document.getElementById('newChapterId').value;
+            if (!currentUser) return alert("Erro: Login de administrador necessário.");
+            const btn = document.getElementById('saveChapterBtn');
+            const id = document.getElementById('newChapterId').value.trim();
             const title = document.getElementById('newChapterTitle').value;
+            const icon = document.getElementById('newChapterIcon').value || 'fa-book';
+            const order = parseInt(document.getElementById('newChapterOrder').value) || 999;
+            const era = document.getElementById('newChapterEra').value;
             const html = document.getElementById('newChapterHtml').value;
+            
             if(!id || !html) return alert("Preencha ID e HTML");
 
-            await setDoc(doc(db, "chapters", id), { html: html, updatedBy: currentUser.email, lastUpdated: new Date() });
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
 
-            const exists = menuStructure.find(m => m.id === id);
-            if (!exists && title) {
-                menuStructure.push({ id: id, title: title, icon: 'fa-book' });
-                await setDoc(doc(db, "meta", "menu"), { structure: menuStructure });
-                renderMenu();
+            const chapterData = {
+                html: html,
+                title: title,
+                icon: icon,
+                order: order,
+                era: era,
+                updatedBy: currentUser.email,
+                lastUpdated: new Date()
+            };
+
+            try {
+                await setDoc(doc(db, "chapters", id), chapterData);
+                
+                // Atualiza cache
+                chaptersCache[id] = chapterData;
+
+                // Recarrega o menu
+                await fetchAndRenderMenu();
+                
+                alert("Capítulo salvo com sucesso!");
+                closeChapterModal();
+                window.loadContent(id);
+
+            } catch (error) {
+                alert("Erro ao salvar: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Salvar Capítulo';
             }
-            closeChapterModal();
-            window.loadContent(id);
-            alert("Salvo!");
         };
 
         window.handleImageUpload = async (input) => {
             if (!input.files.length) return;
-            if (!currentUser) return alert("Login necessário.");
+            if (!currentUser) {
+                input.value = '';
+                return alert("Erro: Você precisa estar logado como Admin para fazer upload.");
+            }
+            
             const file = input.files[0];
+            const metadata = { contentType: file.type };
             const storageRef = ref(storage, `images/${Date.now()}_${file.name}`);
-            const btn = input.previousElementSibling;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            const targetBtn = window.currentImageButton;
+            const originalText = targetBtn ? targetBtn.innerHTML : null;
+            
+            if (targetBtn) {
+                targetBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+                targetBtn.disabled = true;
+            } else {
+                const globalBtn = document.getElementById('globalUploadBtn');
+                if(globalBtn) globalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
             try {
-                await uploadBytes(storageRef, file);
+                const snapshot = await uploadBytes(storageRef, file, metadata);
                 const url = await getDownloadURL(storageRef);
-                const wrapper = document.querySelector('.editable-wrapper');
-                if (wrapper) {
-                    wrapper.focus();
-                    document.execCommand('insertHTML', false, `<div class="my-4"><img src="${url}" class="w-full rounded shadow-lg border border-slate-700"></div>`);
+                
+                if (targetBtn) {
+                    // Se foi chamado por um botão placeholder
+                    const container = targetBtn.closest('.img-placeholder');
+                    if (container) {
+                        container.outerHTML = `<img src="${url}" class="w-full rounded shadow-lg border border-slate-700 fade-in my-4">`;
+                    } else {
+                        // Fallback
+                        const wrapper = document.querySelector('.editable-wrapper');
+                        if (wrapper) {
+                            wrapper.focus();
+                            document.execCommand('insertHTML', false, `<div class="my-4"><img src="${url}" class="w-full rounded shadow-lg border border-slate-700"></div>`);
+                            
+                            // Restaura o botão global se foi ele
+                            if(targetBtn.id === 'globalUploadBtn') {
+                                targetBtn.innerHTML = originalText;
+                                targetBtn.disabled = false;
+                            }
+                        }
+                    }
+                    window.currentImageButton = null; 
                 }
-            } catch (error) { alert("Erro upload: " + error.message); } 
-            finally { btn.innerHTML = originalText; input.value = ''; }
+            } catch (error) { 
+                console.error("Upload Error:", error);
+                alert("Erro no upload: " + error.message);
+                if (targetBtn) {
+                    targetBtn.innerHTML = originalText;
+                    targetBtn.disabled = false;
+                }
+            } finally { 
+                const globalBtn = document.getElementById('globalUploadBtn');
+                if (globalBtn && globalBtn.innerHTML.includes('fa-spinner')) {
+                     globalBtn.innerHTML = '<i class="fas fa-image mr-2"></i> Adicionar Imagem Global';
+                }
+                input.value = ''; 
+            }
         };
 
-        window.openCreateChapterModal = () => {
-            document.getElementById('newChapterId').value = currentChapterId;
-            document.getElementById('newChapterHtml').value = document.querySelector('.editable-wrapper')?.innerHTML || '';
+        window.openCreateChapterModal = async () => {
+            // Tenta preencher com dados existentes se estiver editando o capítulo atual
+            if (currentChapterId && chaptersCache[currentChapterId]) {
+                const data = chaptersCache[currentChapterId];
+                document.getElementById('newChapterId').value = currentChapterId;
+                document.getElementById('newChapterTitle').value = data.title || '';
+                document.getElementById('newChapterIcon').value = data.icon || 'fa-book';
+                document.getElementById('newChapterOrder').value = data.order || 999;
+                document.getElementById('newChapterEra').value = data.era || '';
+                document.getElementById('newChapterHtml').value = data.html || '';
+            } else {
+                // Limpa se for novo ou não encontrado
+                document.getElementById('newChapterId').value = '';
+                document.getElementById('newChapterTitle').value = '';
+                document.getElementById('newChapterIcon').value = 'fa-book';
+                document.getElementById('newChapterOrder').value = '';
+                document.getElementById('newChapterEra').value = '';
+                document.getElementById('newChapterHtml').value = '';
+            }
             document.getElementById('chapterModal').classList.remove('hidden');
-        };
-
-        window.seedDatabase = async () => {
-            if(!confirm("Restaurar dados padrão?")) return;
-            const chapters = {
-                'intro': `<div class="text-center mb-12"><h1 class="text-4xl font-bold text-white">História da Névoa</h1><p class="text-xl text-slate-400">Uma crônica sobre fundação e glória.</p></div>`,
-                'chapter1': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 1</h1></div>`,
-                'chapter2': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 2</h1></div>`,
-                'chapter3': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 3</h1></div>`
-            };
-            try {
-                for (const [key, value] of Object.entries(chapters)) { await setDoc(doc(db, "chapters", key), { html: value }); }
-                alert("Banco resetado! Recarregue."); location.reload();
-            } catch (e) { alert(e.message); }
         };
 
         window.enableEditing = () => { const w = document.querySelector('.editable-wrapper'); if(w) { w.contentEditable = "true"; w.classList.add('editable-content'); w.focus(); } };
 
-        // Internal Helpers
-        function renderMenu() {
-            const nav = document.getElementById('dynamic-nav');
-            nav.innerHTML = '';
-            menuStructure.forEach(item => {
-                if (item.separator) {
-                    nav.innerHTML += `<div class="pt-2 pb-1"><p class="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">${item.separator}</p></div>`;
-                } else {
+        async function fetchAndRenderMenu() {
+            document.getElementById('nav-loading').style.display = 'block';
+            try {
+                // Agora buscamos SEMPRE da coleção 'chapters', ignorando o meta/menu antigo
+                const q = query(collection(db, "chapters"));
+                const querySnapshot = await getDocs(q);
+                let chapters = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    chapters.push({ id: doc.id, ...data });
+                    chaptersCache[doc.id] = data; // Popula o cache
+                });
+                
+                // ORDENAÇÃO: Usa o campo 'order' (número) que adicionamos
+                chapters.sort((a, b) => (a.order || 999) - (b.order || 999));
+                
+                const nav = document.getElementById('dynamic-nav');
+                nav.innerHTML = '';
+                
+                if (chapters.length === 0) {
+                     nav.innerHTML = `<div class="text-center text-slate-500 text-xs p-4">Nenhum capítulo encontrado.</div>`;
+                }
+
+                let currentEra = '';
+
+                chapters.forEach(item => {
+                    // Lógica de Era/Separador
+                    if (item.era && item.era !== currentEra) {
+                        currentEra = item.era;
+                        nav.innerHTML += `<div class="pt-4 pb-1"><p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1 mb-1">${currentEra}</p></div>`;
+                    }
+
                     let html = `<div class="w-full">
-                        <button onclick="loadContent('${item.id}')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500 flex justify-between items-center group">
-                            <span><i class="fas ${item.icon || 'fa-book'} w-6 text-center"></i> ${item.title}</span>
+                        <button id="btn-${item.id}" onclick="loadContent('${item.id}')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500 flex justify-between items-center group">
+                            <span class="flex items-center"><i class="fas ${item.icon || 'fa-book'} w-5 text-center mr-2 text-slate-500 group-hover:text-sky-400"></i> ${item.title || item.id}</span>
                             <i class="fas fa-chevron-down text-xs opacity-0 transition-opacity" id="arrow-${item.id}"></i>
                         </button>
                         <div id="${item.id}-subs" class="sub-menu-container hidden flex-col space-y-1"></div>
                     </div>`;
                     nav.innerHTML += html;
+                });
+
+                document.getElementById('nav-loading').style.display = 'none';
+                
+                // Se estiver no intro ou em algum capitulo, recarrega o conteúdo visual se não estiver carregado
+                if (currentChapterId && chaptersCache[currentChapterId]) {
+                    // Opcional: só para garantir destaque no menu
+                    const activeBtn = document.getElementById(`btn-${currentChapterId}`);
+                    if(activeBtn) activeBtn.classList.add('border-sky-500', 'bg-slate-800', 'text-sky-300');
+                } else if (chapters.length > 0) {
+                    window.loadContent(chapters[0].id);
                 }
-            });
-            document.getElementById('nav-loading').style.display = 'none';
+
+            } catch (e) {
+                console.error("Erro ao buscar menu:", e);
+                document.getElementById('nav-loading').innerHTML = "Erro ao carregar menu.";
+            }
         }
 
         function detectAndBuildSubMenu(chapterId) {
@@ -369,7 +508,8 @@
             if (!subContainer) return;
 
             const content = document.getElementById('dynamic-content');
-            const headers = content.querySelectorAll('h2, h3');
+            // Detecta apenas H2 para o submenu
+            const headers = content.querySelectorAll('h2');
             
             if (headers.length > 0) {
                 let html = '';
@@ -383,9 +523,7 @@
                     }
                     const targetId = header.parentElement && header.parentElement.id && header.parentElement.id.startsWith('sec-') ? header.parentElement.id : header.id;
                     const title = header.innerText;
-                    // Logic fixed: h2 is main, h3 is sub (indented)
-                    const indentClass = header.tagName === 'H3' ? 'pl-12 text-slate-500' : 'text-slate-400';
-                    html += `<button onclick="scrollToAnchor('${targetId}')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 ${indentClass} transition-colors text-xs truncate">${title}</button>`;
+                    html += `<button onclick="scrollToAnchor('${targetId}')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors text-xs truncate">${title}</button>`;
                 });
                 subContainer.innerHTML = html;
                 subContainer.classList.remove('hidden');
@@ -408,16 +546,9 @@
             }
         });
 
-        async function initApp() {
-            try {
-                const metaDoc = await getDoc(doc(db, "meta", "menu"));
-                if (metaDoc.exists()) menuStructure = metaDoc.data().structure;
-            } catch (e) { console.log("Menu padrão local"); }
-            renderMenu();
-            window.loadContent('intro');
-        }
+        // Inicializa
+        fetchAndRenderMenu();
 
-        initApp();
     </script>
 </body>
 </html>
