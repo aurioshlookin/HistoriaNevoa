@@ -158,7 +158,7 @@
 
     <!-- Global Helpers Script (Standard JS) -->
     <script>
-        // Funções de UI Globais - Definidas aqui para evitar ReferenceError
+        // Funções de UI Globais
         function toggleSidebar() { 
             document.getElementById('sidebar').classList.toggle('-translate-x-full'); 
         }
@@ -176,26 +176,13 @@
             if(el) {
                 el.classList.toggle('hidden'); 
                 el.classList.toggle('flex');
-                
-                // Rotaciona a seta se existir
                 const arrow = document.getElementById('arrow-' + id.replace('-subs', ''));
                 if(arrow) arrow.classList.toggle('rotate-180');
             }
         }
 
-        // Placeholders para funções que serão injetadas pelo módulo
-        // Isso evita o erro "is not defined" antes do módulo carregar
-        window.loadContent = (id) => console.log("Carregando...", id);
-        window.scrollToAnchor = (id) => console.log("Rolando...", id);
-        window.handleLogin = () => console.log("Login...");
-        window.saveChanges = () => console.log("Salvando...");
-        window.handleImageUpload = () => console.log("Upload...");
-        window.handleLogout = () => console.log("Logout...");
-        window.openCreateChapterModal = () => console.log("Modal...");
-        window.closeChapterModal = () => document.getElementById('chapterModal').classList.add('hidden');
-        window.saveChapterToDb = () => console.log("Salvando Cap...");
-        window.seedDatabase = () => console.log("Seed...");
-        window.enableEditing = () => console.log("Edit...");
+        // Placeholders para evitar erros antes do módulo carregar
+        window.loadContent = (id) => console.log("Aguardando módulo...", id);
     </script>
 
     <!-- Firebase Logic (Module) -->
@@ -231,7 +218,7 @@
             { id: 'chapter3', title: 'Cap. 3: Nidaime Mizukami', icon: 'fa-spider' }
         ];
 
-        // --- EXPORTING FUNCTIONS TO GLOBAL SCOPE ---
+        // --- GLOBAL EXPORTS ---
         
         window.handleLogin = async () => {
             const email = document.getElementById('adminEmail').value;
@@ -302,7 +289,6 @@
 
             await setDoc(doc(db, "chapters", id), { html: html, updatedBy: currentUser.email, lastUpdated: new Date() });
 
-            // Adiciona ao menu se não existir
             const exists = menuStructure.find(m => m.id === id);
             if (!exists && title) {
                 menuStructure.push({ id: id, title: title, icon: 'fa-book' });
@@ -342,12 +328,11 @@
 
         window.seedDatabase = async () => {
             if(!confirm("Restaurar dados padrão?")) return;
-            // Dados de exemplo para popular o banco (apenas um trecho para não estourar o código)
             const chapters = {
-                'intro': `<div class="text-center mb-12"><h1 class="text-4xl font-bold text-white">História da Névoa</h1><p class="text-xl text-slate-400">Uma crônica sobre fundação e glória.</p></div><div class="bg-slate-800/50 p-8 rounded-xl"><p>Seja bem-vindo(a). A partir daqui vou registrar tudo...</p></div>`,
-                'chapter1': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 1: O Início</h1></div><p>A era shinobi começou em 29 de agosto...</p>`,
-                'chapter2': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 2: Acqua</h1></div><div id="sec-2-1"><h2>2.1 Início</h2><p>O mandato de Acqua...</p></div>`,
-                'chapter3': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 3: Kirisaki</h1></div><div id="sec-3-1"><h2>3.1 Início</h2><p>Kirisaki assumiu...</p></div><div id="sec-3-9"><h3>3.9 As Grandes Guildas</h3><p>...</p></div>`
+                'intro': `<div class="text-center mb-12"><h1 class="text-4xl font-bold text-white">História da Névoa</h1><p class="text-xl text-slate-400">Uma crônica sobre fundação e glória.</p></div>`,
+                'chapter1': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 1</h1></div>`,
+                'chapter2': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 2</h1></div>`,
+                'chapter3': `<div class="border-b border-slate-700 pb-6 mb-8"><h1 class="text-3xl font-bold text-white">Capítulo 3</h1></div>`
             };
             try {
                 for (const [key, value] of Object.entries(chapters)) { await setDoc(doc(db, "chapters", key), { html: value }); }
@@ -398,6 +383,7 @@
                     }
                     const targetId = header.parentElement && header.parentElement.id && header.parentElement.id.startsWith('sec-') ? header.parentElement.id : header.id;
                     const title = header.innerText;
+                    // Logic fixed: h2 is main, h3 is sub (indented)
                     const indentClass = header.tagName === 'H3' ? 'pl-12 text-slate-500' : 'text-slate-400';
                     html += `<button onclick="scrollToAnchor('${targetId}')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 ${indentClass} transition-colors text-xs truncate">${title}</button>`;
                 });
@@ -408,7 +394,6 @@
             }
         }
 
-        // Init App Logic
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
