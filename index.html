@@ -210,6 +210,7 @@
                 <button onclick="scrollToSection('sec-3-6')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">3.6 O Silêncio do Kami</button>
                 <button onclick="scrollToSection('sec-3-7')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">3.7 Resistência Oinin</button>
                 <button onclick="scrollToSection('sec-3-8')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">3.8 Retomada e Festas</button>
+                <button onclick="scrollToSection('sec-3-9')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors">3.9 As Grandes Guildas</button>
             </div>
         </nav>
 
@@ -463,6 +464,27 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
+    </script>
+    
+    <!-- Firebase Integration -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyC33QzesuQgO7Qtu6q6ci1EL1PnViPxub4",
+        authDomain: "historianevoa.firebaseapp.com",
+        projectId: "historianevoa",
+        storageBucket: "historianevoa.firebasestorage.app",
+        messagingSenderId: "341318354390",
+        appId: "1:341318354390:web:70787c80be301888e6d077",
+        measurementId: "G-C4NJBEZDCM"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      console.log("Firebase initialized successfully");
     </script>
 </body>
 </html>
