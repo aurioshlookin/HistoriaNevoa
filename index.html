@@ -27,8 +27,8 @@
 
         /* Estilos do Markdown Geral (Ajustados para parecer com o Discord) */
         .prose p {
-            margin-bottom: 0.75rem; /* Margem reduzida */
-            line-height: 1.5; /* Espaçamento de linha mais compacto */
+            margin-bottom: 0.85rem; 
+            line-height: 1.5; 
             font-size: 1.05rem;
             color: #e2e8f0;
         }
@@ -36,24 +36,23 @@
             margin-bottom: 0;
         }
         .prose blockquote {
-            border-left: 4px solid #3b82f6;
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
-            padding: 0.5rem 1rem; /* Padding reduzido */
-            border-radius: 0 0.5rem 0.5rem 0;
-            margin-bottom: 1rem; /* Margem reduzida */
-            color: #94a3b8;
-            font-style: italic;
+            border-left: 4px solid #4f545c; /* Cor da barrinha de blockquote do Discord */
+            background: transparent;
+            padding: 0 0 0 1rem; 
+            margin: 0.5rem 0 1rem 0; 
+            color: #b9bbbe;
+            font-style: normal; /* Discord não deixa itálico por padrão no blockquote */
         }
         .prose blockquote p {
             margin-bottom: 0;
+            color: #b9bbbe;
         }
         .prose a {
-            color: #60a5fa;
+            color: #00aff4; /* Azul de link do Discord */
             text-decoration: none;
-            transition: color 0.2s;
+            transition: text-decoration 0.2s;
         }
         .prose a:hover {
-            color: #93c5fd;
             text-decoration: underline;
         }
         .prose strong {
@@ -63,17 +62,26 @@
 
         /* Estilo específico para textos que são legendas de imagens (Dentro da caixa) */
         .media-caption p {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0; /* Remove margem para colar na imagem */
             font-size: 1rem;
+            line-height: 1.4;
         }
         .media-caption blockquote {
-            border-left: 3px solid #64748b; /* Estilo sutil de citação do Discord */
+            border-left: 4px solid #4f545c; 
             background: transparent;
-            padding: 0 0 0 1rem;
-            margin: 0 0 0.75rem 0;
+            padding: 0 0 0 12px;
+            margin: 0; /* Sem margem para não afastar a imagem */
             color: #cbd5e1;
+            font-style: normal;
+        }
+
+        /* Força a exibição do * nas legendas em itálico */
+        .media-caption em {
             font-style: italic;
-            border-radius: 0;
+        }
+        .media-caption em::before,
+        .media-caption em::after {
+            content: "*"; /* Devolve visualmente os asteriscos que o Markdown oculta */
         }
         
         /* Menu Lateral Customizado */
@@ -150,7 +158,7 @@
     </div>
 
     <script>
-        // Configurando o Marked.js para não adicionar IDs automáticos conflitantes
+        // Configurando o Marked.js (breaks = true transforma "Enter" comum em quebra de linha natural)
         marked.setOptions({ breaks: true, gfm: true });
         
         // Elementos UI
@@ -178,7 +186,7 @@
                        .trim().toLowerCase().replace(/\s+/g, '-');
         }
 
-        // JS preciso para Rolagem (Corrige o bug do clique duplo)
+        // JS preciso para Rolagem
         window.handleTocClick = function(event, slug) {
             event.preventDefault();
             const target = document.getElementById(slug);
@@ -219,19 +227,17 @@
 
         // 2. Renderizar os dados e extrair informações para o Índice
         function processarDados(rawData) {
-            loading.style.display = 'none'; // Esconder loader
+            loading.style.display = 'none'; 
             
             // Ordenar do mais antigo para o mais novo
             const sortedData = rawData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
             const discordEmojiRegex = /<:([a-zA-Z0-9_]+):(\d+)>/g;
             
-            // Objeto para organizar o Menu em Árvore (Capítulos -> Subcapítulos)
             const tocTree = [];
-
-            // 3. Agrupar mensagens pelo cabeçalho (# ou ##)
             const groupedData = [];
             let currentGroup = null;
 
+            // Agrupar mensagens pelo cabeçalho
             sortedData.forEach(msg => {
                 const hasHeading = /^(#{1,2})\s+(.*)$/m.test(msg.content || "");
                 if (hasHeading || !currentGroup) {
@@ -242,9 +248,9 @@
                 }
             });
 
-            let currentChapterTree = null; // Rastreador para a montagem do menu
+            let currentChapterTree = null; 
 
-            // 4. Renderizar o HTML dos Grupos e Extrair Dados para o Menu
+            // Renderizar o HTML
             groupedData.forEach((group) => {
                 const article = document.createElement('article');
                 article.className = 'mb-10 relative';
@@ -258,7 +264,7 @@
                     const lines = rawContent.split('\n');
                     let remainingLines = [];
 
-                    // Extração de Títulos e Preenchimento da Árvore do Menu
+                    // Extração de Títulos
                     lines.forEach(line => {
                         const match = line.match(/^(#{1,2})\s+(.*)$/); 
                         if (match) {
@@ -266,18 +272,15 @@
                             let rawText = match[2];
                             const slug = createSlug(rawText);
                             
-                            // Limpa ** do texto
                             let cleanText = rawText.replace(/\*\*/g, '');
                             let tocText = cleanText.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
                             let displayText = cleanText.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block h-8 w-8 mx-2 align-middle">');
                             
                             if (level === 1) {
-                                // Cria um novo nó principal no menu
                                 currentChapterTree = { slug, tocText, subs: [] };
                                 tocTree.push(currentChapterTree);
                                 headingsHTML += `<h1 id="${slug}" class="text-3xl md:text-4xl font-extrabold text-white mt-12 mb-6 border-b-2 border-blue-500/50 pb-4 flex items-center scroll-mt-24 tracking-tight">${displayText}</h1>`;
                             } else if (level === 2) {
-                                // Adiciona como subcapítulo do nó atual
                                 if (currentChapterTree) {
                                     currentChapterTree.subs.push({ slug, tocText });
                                 }
@@ -288,7 +291,7 @@
                         }
                     });
 
-                    // Renderização de Conteúdo
+                    // Renderização do resto do conteúdo Markdown
                     rawContent = remainingLines.join('\n').trim();
                     rawContent = rawContent.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" alt=":$1:" class="inline-block h-6 w-6 align-middle">');
                     let htmlContent = rawContent ? marked.parse(rawContent) : '';
@@ -300,12 +303,15 @@
                     if (htmlContent || hasMedia) {
                         if (hasMedia) {
                             let mediaBoxContent = '';
+                            
+                            // Se tem legenda, remove o padding inferior pra ficar grudado na foto
                             if (htmlContent) {
-                                mediaBoxContent += `<div class="p-4 md:p-5 pb-2 prose max-w-none media-caption">${htmlContent}</div>`;
+                                mediaBoxContent += `<div class="p-4 md:p-5 pb-1 md:pb-1 prose max-w-none media-caption">${htmlContent}</div>`;
                             }
                             
+                            // Fotos (Padding top ajustado para pt-2 para ficar grudado na legenda)
                             if (msg.attachments && msg.attachments.length > 0) {
-                                mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 flex flex-col gap-4">';
+                                mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 flex flex-col gap-4">';
                                 msg.attachments.forEach(att => {
                                     if (att.content_type && att.content_type.startsWith('image/')) {
                                         mediaBoxContent += `<img src="${att.url}" alt="${att.filename}" class="w-full h-auto rounded-xl shadow-lg border border-slate-700/50 object-contain max-h-[600px]" loading="lazy">`;
@@ -314,8 +320,9 @@
                                 mediaBoxContent += '</div>';
                             }
 
+                            // Vídeos
                             if (msg.embeds && msg.embeds.length > 0) {
-                                mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 flex flex-col gap-4">';
+                                mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 flex flex-col gap-4">';
                                 msg.embeds.forEach(embed => {
                                     if (embed.type === 'video' && embed.video && embed.video.url) {
                                         mediaBoxContent += `
@@ -350,11 +357,10 @@
                 contentContainer.appendChild(article);
             });
 
-            // 5. Montar o HTML Interativo do Menu Lateral (TOC)
+            // Menu Lateral (TOC)
             let finalTocHTML = '';
             tocTree.forEach((chapter, index) => {
                 const hasSubs = chapter.subs && chapter.subs.length > 0;
-                // Abre o primeiro capítulo por padrão (opcional), os outros fechados
                 const isFirst = index === 0; 
                 
                 finalTocHTML += `
