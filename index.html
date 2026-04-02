@@ -25,31 +25,11 @@
             background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
         }
 
-        /* Estilos do Markdown Gerado (Refinados) */
-        .prose h1 {
-            color: #ffffff;
-            font-size: 2.25rem;
-            font-weight: 800;
-            margin-top: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid rgba(59, 130, 246, 0.6); /* Azul vibrante */
-            padding-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            letter-spacing: -0.025em;
-        }
-        .prose h2 {
-            color: #e0f2fe;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-        }
+        /* Estilos do Markdown Geral (Fora da caixa de mídia) */
         .prose p {
             margin-bottom: 1.25rem;
             line-height: 1.8;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             color: #e2e8f0;
         }
         .prose blockquote {
@@ -78,18 +58,22 @@
             font-weight: 700;
         }
 
-        /* Estilo específico para textos que são legendas de imagens */
+        /* Estilo específico para textos que são legendas de imagens (Dentro da caixa) */
+        .media-caption p {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+        .media-caption p:last-child {
+            margin-bottom: 0;
+        }
         .media-caption blockquote {
-            border: none;
+            border-left: 3px solid #64748b; /* Estilo sutil de citação do Discord */
             background: transparent;
-            padding: 0;
-            margin: 0;
+            padding: 0 0 0 1rem;
+            margin: 0 0 1rem 0;
             color: #cbd5e1;
             font-style: italic;
-        }
-        .media-caption p {
-            margin-bottom: 0;
-            font-size: 1rem;
+            border-radius: 0;
         }
         
         /* Menu Lateral Customizado */
@@ -159,7 +143,7 @@
             </div>
 
             <!-- Footer interno -->
-            <footer class="text-center py-6 text-slate-500 text-sm mt-12 border-t border-slate-800/50">
+            <footer class="text-center py-8 text-slate-500 text-sm mt-12 border-t border-slate-800/50">
                 <p>Registros históricos da Vila Oculta da Névoa compilados por Auriosh.</p>
             </footer>
         </main>
@@ -230,141 +214,134 @@
                 const hasHeading = /^(#{1,2})\s+(.*)$/m.test(msg.content || "");
                 
                 if (hasHeading || !currentGroup) {
-                    // Cria um novo grupo/balão
                     currentGroup = {
-                        author: msg.author,
-                        timestamp: msg.timestamp,
                         messages: [msg] // Salva as mensagens originais na ordem
                     };
                     groupedData.push(currentGroup);
                 } else {
-                    // Adiciona a mensagem subsequente no grupo atual
                     currentGroup.messages.push(msg);
                 }
             });
 
             // 4. Renderizar o HTML dos Grupos e Montar o Índice
             groupedData.forEach((group) => {
-                // Criar Bloco Visual do Artigo
+                // Removemos os avatares e fundo de "cartão", mantendo um layout fluido de página
                 const article = document.createElement('article');
-                // Fundo um pouco mais claro para destacar as mídias escuras internas
-                article.className = 'mb-12 bg-slate-800/40 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-xl border border-slate-700/50 hover:border-slate-600 transition-colors relative';
-
-                // Cabeçalho (Autor, Avatar, Data da primeira mensagem)
-                const dateObj = new Date(group.timestamp);
-                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const avatarUrl = group.author.avatar 
-                    ? `https://cdn.discordapp.com/avatars/${group.author.id}/${group.author.avatar}.png` 
-                    : `https://cdn.discordapp.com/embed/avatars/${parseInt(group.author.discriminator || 0) % 5}.png`;
-                const displayName = group.author.global_name || group.author.username;
-
-                let headerHTML = `
-                    <div class="flex items-center mb-6 pb-4 border-b border-slate-700/50">
-                        <img src="${avatarUrl}" class="w-12 h-12 rounded-full mr-4 shadow-sm border border-slate-600" alt="${displayName}">
-                        <div>
-                            <div class="font-bold text-blue-300 text-lg leading-tight">${displayName}</div>
-                            <div class="text-xs text-slate-400 mt-1">${dateStr}</div>
-                        </div>
-                    </div>
-                `;
+                article.className = 'mb-12 relative';
 
                 let bodyHTML = '';
 
-                // Renderiza cada mensagem individualmente dentro do mesmo balão
+                // Renderiza cada mensagem individualmente dentro do mesmo capítulo
                 group.messages.forEach((msg, index) => {
                     let rawContent = msg.content || "";
+                    let headingsHTML = '';
                     
-                    // Extração do Índice (TOC) e âncoras na mesma passagem
+                    // Separar Títulos e Textos
                     const lines = rawContent.split('\n');
+                    let remainingLines = [];
+
                     lines.forEach(line => {
                         const match = line.match(/^(#{1,2})\s+(.*)$/); 
                         if (match) {
                             const level = match[1].length; 
-                            let text = match[2];
-                            const slug = createSlug(text);
+                            let rawText = match[2];
+                            const slug = createSlug(rawText);
                             
-                            // Texto formatado para o Menu (remove os ** se existirem)
-                            let tocText = text.replace(/\*\*/g, '').replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
+                            // Limpa ** do texto base
+                            let cleanText = rawText.replace(/\*\*/g, '');
                             
-                            // Remove ** diretamente da linha do cabeçalho para o Markdown renderizar o H1 limpo
-                            let cleanLine = line.replace(/\*\*/g, '');
-                            // Adiciona âncora invisível que ajusta o scroll
-                            rawContent = rawContent.replace(line, `<div id="${slug}" class="scroll-mt-24"></div>\n${cleanLine}`);
+                            // Título para o Menu
+                            let tocText = cleanText.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
                             
-                            // Criação dos botões do índice
+                            // Título Gigante pra visualização real na tela
+                            let displayText = cleanText.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block h-8 w-8 mx-2 align-middle">');
+                            
+                            // Criação dos botões do índice e injeção do Título formatado fora do Parse Markdown
                             if (level === 1) {
                                 tocHTML += `<li class="pt-3 pb-1"><a href="#${slug}" class="block text-blue-200 font-bold hover:text-blue-400 transition-colors text-sm" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                                headingsHTML += `<h1 id="${slug}" class="text-3xl md:text-4xl font-extrabold text-white mt-12 mb-6 border-b-2 border-blue-500/50 pb-4 flex items-center scroll-mt-24 tracking-tight">${displayText}</h1>`;
                             } else if (level === 2) {
                                 tocHTML += `<li class="ml-3 border-l-2 border-slate-700/50 pl-3 py-1"><a href="#${slug}" class="block text-slate-400 text-sm hover:text-blue-300 transition-colors" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                                headingsHTML += `<h2 id="${slug}" class="text-2xl md:text-3xl font-bold text-blue-100 mt-10 mb-5 scroll-mt-24 flex items-center tracking-tight">${displayText}</h2>`;
                             }
+                        } else {
+                            // Se não for título, mantem como texto normal
+                            remainingLines.push(line);
                         }
                     });
 
-                    // Substituir emojis no corpo
+                    // Parse do que não era título
+                    rawContent = remainingLines.join('\n').trim();
                     rawContent = rawContent.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" alt=":$1:" class="inline-block h-6 w-6 align-middle">');
-                    
-                    // Fazer parse do Markdown para HTML
-                    let htmlContent = marked.parse(rawContent);
+                    let htmlContent = rawContent ? marked.parse(rawContent) : '';
 
                     // Verificar se existe mídia nesta mensagem específica
                     const hasMedia = (msg.attachments && msg.attachments.length > 0) || (msg.embeds && msg.embeds.length > 0);
 
-                    if (hasMedia) {
-                        // Caixa Unificada de Mídia + Legenda
-                        let mediaBoxContent = '';
-                        
-                        // Se tiver texto associado à imagem, coloca ele dentro da mesma caixa (usando a classe media-caption)
-                        if (htmlContent) {
-                            mediaBoxContent += `<div class="px-5 pt-5 pb-3 prose max-w-none media-caption">${htmlContent}</div>`;
-                        }
-                        
-                        // Anexos (Imagens)
-                        if (msg.attachments && msg.attachments.length > 0) {
-                            mediaBoxContent += '<div class="px-5 pb-5 flex flex-col gap-4">';
-                            msg.attachments.forEach(att => {
-                                if (att.content_type && att.content_type.startsWith('image/')) {
-                                    mediaBoxContent += `<img src="${att.url}" alt="${att.filename}" class="w-full h-auto rounded-lg shadow-sm border border-slate-700/50 object-contain max-h-[500px]" loading="lazy">`;
-                                }
-                            });
-                            mediaBoxContent += '</div>';
-                        }
+                    // 1º Insere os Títulos Isolados (se houver)
+                    if (headingsHTML) {
+                        bodyHTML += headingsHTML;
+                    }
 
-                        // Embeds (Vídeos do YouTube)
-                        if (msg.embeds && msg.embeds.length > 0) {
-                            mediaBoxContent += '<div class="px-5 pb-5 flex flex-col gap-4">';
-                            msg.embeds.forEach(embed => {
-                                if (embed.type === 'video' && embed.video && embed.video.url) {
-                                    mediaBoxContent += `
-                                        <div class="relative w-full pb-[56.25%] h-0 rounded-lg overflow-hidden shadow-sm border border-slate-700/50">
-                                            <iframe src="${embed.video.url}" class="absolute top-0 left-0 w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                        </div>
-                                        ${embed.title ? `<p class="mt-2 text-sm text-slate-400 font-semibold text-center">${embed.title}</p>` : ''}
-                                    `;
-                                }
-                            });
-                            mediaBoxContent += '</div>';
-                        }
+                    // 2º Insere o Conteúdo (Mídia com Legenda VS Apenas Texto)
+                    if (htmlContent || hasMedia) {
+                        if (hasMedia) {
+                            // Caixa Unificada de Mídia + Legenda
+                            let mediaBoxContent = '';
+                            
+                            // Legenda vinculada à mídia
+                            if (htmlContent) {
+                                mediaBoxContent += `<div class="p-5 md:p-6 pb-2 prose max-w-none media-caption">${htmlContent}</div>`;
+                            }
+                            
+                            // Anexos (Imagens)
+                            if (msg.attachments && msg.attachments.length > 0) {
+                                mediaBoxContent += '<div class="px-5 md:px-6 pb-5 md:pb-6 flex flex-col gap-4">';
+                                msg.attachments.forEach(att => {
+                                    if (att.content_type && att.content_type.startsWith('image/')) {
+                                        mediaBoxContent += `<img src="${att.url}" alt="${att.filename}" class="w-full h-auto rounded-xl shadow-lg border border-slate-700/50 object-contain max-h-[600px]" loading="lazy">`;
+                                    }
+                                });
+                                mediaBoxContent += '</div>';
+                            }
 
-                        // Renderiza o bloco de mídia com um fundo destacado (bg-slate-900/80)
-                        bodyHTML += `
-                            <div class="msg-block mb-8 last:mb-0">
-                                <div class="bg-slate-900/80 rounded-2xl overflow-hidden shadow-inner border border-slate-700/50 max-w-full lg:max-w-4xl mx-auto">
-                                    ${mediaBoxContent}
+                            // Embeds (Vídeos do YouTube)
+                            if (msg.embeds && msg.embeds.length > 0) {
+                                mediaBoxContent += '<div class="px-5 md:px-6 pb-5 md:pb-6 flex flex-col gap-4">';
+                                msg.embeds.forEach(embed => {
+                                    if (embed.type === 'video' && embed.video && embed.video.url) {
+                                        mediaBoxContent += `
+                                            <div class="relative w-full pb-[56.25%] h-0 rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
+                                                <iframe src="${embed.video.url}" class="absolute top-0 left-0 w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                            </div>
+                                            ${embed.title ? `<p class="mt-3 text-sm text-slate-400 font-semibold text-center">${embed.title}</p>` : ''}
+                                        `;
+                                    }
+                                });
+                                mediaBoxContent += '</div>';
+                            }
+
+                            // Renderiza a Caixa Escura Unida
+                            bodyHTML += `
+                                <div class="msg-block mb-8">
+                                    <div class="bg-slate-800/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-md border border-slate-700/60 max-w-full lg:max-w-4xl mx-auto">
+                                        ${mediaBoxContent}
+                                    </div>
                                 </div>
-                            </div>
-                        `;
-                    } else {
-                        // Se não tem mídia, renderiza como um texto/parágrafo normal fora da caixa
-                        bodyHTML += `
-                            <div class="msg-block mb-8 last:mb-0">
-                                ${htmlContent ? `<div class="prose max-w-none text-slate-300">${htmlContent}</div>` : ''}
-                            </div>
-                        `;
+                            `;
+                        } else {
+                            // Parágrafos soltos, fluindo normalmente fora da caixa
+                            bodyHTML += `
+                                <div class="msg-block mb-6">
+                                    <div class="prose max-w-none text-slate-300">${htmlContent}</div>
+                                </div>
+                            `;
+                        }
                     }
                 });
 
-                // Unir Cabeçalho e Corpo
-                article.innerHTML = headerHTML + bodyHTML;
+                // Insere no Layout
+                article.innerHTML = bodyHTML;
                 contentContainer.appendChild(article);
             });
 
