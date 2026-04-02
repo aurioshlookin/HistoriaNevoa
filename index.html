@@ -30,35 +30,36 @@
             color: #f8fafc;
             font-size: 2rem;
             font-weight: 700;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
             border-bottom: 2px solid #334155;
             padding-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            scroll-margin-top: 100px; /* Evita que o cabeçalho fixo cubra o titulo ao navegar */
         }
         .prose h2 {
             color: #e0f2fe;
             font-size: 1.5rem;
             font-weight: 600;
-            margin-top: 2rem;
-            margin-bottom: 0.75rem;
-            scroll-margin-top: 100px;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
         }
         .prose p {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
             line-height: 1.7;
         }
         .prose blockquote {
             border-left: 4px solid #3b82f6;
-            background: rgba(59, 130, 246, 0.05);
+            background: rgba(59, 130, 246, 0.08);
             padding: 0.75rem 1rem;
             border-radius: 0 0.5rem 0.5rem 0;
-            margin-bottom: 1.25rem;
-            color: #94a3b8;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
             font-style: italic;
+        }
+        .prose blockquote p {
+            margin-bottom: 0; /* Remove margem extra dentro do blockquote */
         }
         .prose a {
             color: #60a5fa;
@@ -147,13 +148,8 @@
         </main>
     </div>
 
-    <!-- Fallback caso não consiga buscar de dados.json (usado para ambientes de preview online) -->
-    <script id="fallback-json" type="application/json">
-        [] 
-    </script>
-
     <script>
-        // Configurando o Marked.js
+        // Configurando o Marked.js para não adicionar IDs automáticos conflitantes
         marked.setOptions({ breaks: true, gfm: true });
         
         // Elementos UI
@@ -184,7 +180,6 @@
         // 1. Carregar os Dados do arquivo JSON externo
         async function fetchDados() {
             try {
-                // Tenta carregar o arquivo externo que foi gerado junto
                 const response = await fetch('dados.json');
                 if (!response.ok) throw new Error("Não foi possível acessar dados.json");
                 const data = await response.json();
@@ -206,77 +201,38 @@
             
             // Ordenar do mais antigo para o mais novo
             const sortedData = rawData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            
             const discordEmojiRegex = /<:([a-zA-Z0-9_]+):(\d+)>/g;
             let tocHTML = '';
 
-            // Agrupar mensagens pelo cabeçalho (# ou ##)
+            // 3. Agrupar mensagens pelo cabeçalho (# ou ##)
             const groupedData = [];
             let currentGroup = null;
 
             sortedData.forEach(msg => {
-                // Verifica se a mensagem contém um título principal (# ou ##)
+                // Verifica se a mensagem atual contém um título principal (# ou ##)
                 const hasHeading = /^(#{1,2})\s+(.*)$/m.test(msg.content || "");
                 
                 if (hasHeading || !currentGroup) {
-                    // Cria um novo balão
+                    // Cria um novo grupo/balão
                     currentGroup = {
                         author: msg.author,
                         timestamp: msg.timestamp,
-                        content: msg.content || "",
-                        attachments: [...(msg.attachments || [])],
-                        embeds: [...(msg.embeds || [])]
+                        messages: [msg] // Salva as mensagens originais na ordem
                     };
                     groupedData.push(currentGroup);
                 } else {
-                    // Adiciona conteúdo ao balão atual
-                    if (msg.content) currentGroup.content += '\n\n' + msg.content;
-                    if (msg.attachments) currentGroup.attachments.push(...msg.attachments);
-                    if (msg.embeds) currentGroup.embeds.push(...msg.embeds);
+                    // Adiciona a mensagem subsequente no grupo atual
+                    currentGroup.messages.push(msg);
                 }
             });
 
+            // 4. Renderizar o HTML dos Grupos e Montar o Índice
             groupedData.forEach((group) => {
-                let rawContent = group.content || "";
-                
-                // Extração dos Títulos para o Índice e injeção de Âncoras
-                const lines = rawContent.split('\n');
-                lines.forEach(line => {
-                    const match = line.match(/^(#{1,2})\s+(.*)$/); // Pega linhas com # ou ##
-                    if (match) {
-                        const level = match[1].length; 
-                        let text = match[2];
-                        
-                        // ID Baseado no texto limpo
-                        const slug = createSlug(text);
-                        
-                        // Substitui Emojis do Discord apenas para o nome que vai aparecer no índice
-                        let tocText = text.replace(/\*\*/g, '') // remove markdown bold pro indice
-                                          .replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
-                        
-                        // Injeta uma âncora de ID direto no markdown para a navegação funcionar
-                        rawContent = rawContent.replace(line, `<div id="${slug}"></div>\n${line}`);
-                        
-                        // Adiciona no HTML do Índice
-                        if (level === 1) {
-                            tocHTML += `<li class="pt-3 pb-1"><a href="#${slug}" class="block text-blue-200 font-bold hover:text-blue-400 transition-colors text-sm" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
-                        } else if (level === 2) {
-                            tocHTML += `<li class="ml-3 border-l-2 border-slate-700/50 pl-3 py-1"><a href="#${slug}" class="block text-slate-400 text-sm hover:text-blue-300 transition-colors" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
-                        }
-                    }
-                });
-
-                // Substituir emojis do discord no corpo da mensagem
-                rawContent = rawContent.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" alt=":$1:" class="inline-block h-6 w-6 align-middle">');
-                
-                // Fazer parse do Markdown para HTML
-                let htmlContent = marked.parse(rawContent);
-
                 // Criar Bloco Visual do Artigo
                 const article = document.createElement('article');
-                article.className = 'mb-10 bg-slate-800/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-700/50 hover:border-slate-600 transition-colors';
+                article.className = 'mb-12 bg-slate-800/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-700/50 hover:border-slate-600 transition-colors relative';
 
-                // Cabeçalho (Autor, Avatar, Data)
+                // Cabeçalho (Autor, Avatar, Data da primeira mensagem)
                 const dateObj = new Date(group.timestamp);
                 const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const avatarUrl = group.author.avatar 
@@ -285,8 +241,8 @@
                 const displayName = group.author.global_name || group.author.username;
 
                 let headerHTML = `
-                    <div class="flex items-center mb-5 pb-4 border-b border-slate-700/50">
-                        <img src="${avatarUrl}" class="w-12 h-12 rounded-full mr-4 shadow-sm" alt="${displayName}">
+                    <div class="flex items-center mb-6 pb-4 border-b border-slate-700/50">
+                        <img src="${avatarUrl}" class="w-12 h-12 rounded-full mr-4 shadow-sm border border-slate-600" alt="${displayName}">
                         <div>
                             <div class="font-bold text-blue-300 text-lg leading-tight">${displayName}</div>
                             <div class="text-xs text-slate-400 mt-1">${dateStr}</div>
@@ -294,42 +250,88 @@
                     </div>
                 `;
 
-                // Anexos de Imagens
-                let attachmentsHTML = '';
-                if (group.attachments && group.attachments.length > 0) {
-                    attachmentsHTML = '<div class="mt-6 flex flex-col gap-4">';
-                    group.attachments.forEach(att => {
-                        if (att.content_type && att.content_type.startsWith('image/')) {
-                            attachmentsHTML += `
-                            <div class="rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900/50">
-                                <img src="${att.url}" alt="${att.filename}" class="w-full h-auto object-contain max-h-[600px] hover:scale-[1.02] transition-transform duration-300" loading="lazy">
-                            </div>`;
+                let bodyHTML = '';
+
+                // Renderiza cada mensagem individualmente dentro do mesmo balão
+                group.messages.forEach((msg, index) => {
+                    let rawContent = msg.content || "";
+                    
+                    // Extração do Índice (TOC) e âncoras na mesma passagem
+                    const lines = rawContent.split('\n');
+                    lines.forEach(line => {
+                        const match = line.match(/^(#{1,2})\s+(.*)$/); 
+                        if (match) {
+                            const level = match[1].length; 
+                            let text = match[2];
+                            const slug = createSlug(text);
+                            
+                            // Texto formatado para o Menu
+                            let tocText = text.replace(/\*\*/g, '').replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
+                            
+                            // Adiciona âncora invisível que ajusta o scroll
+                            rawContent = rawContent.replace(line, `<div id="${slug}" class="scroll-mt-24"></div>\n${line}`);
+                            
+                            // Criação dos botões do índice
+                            if (level === 1) {
+                                tocHTML += `<li class="pt-3 pb-1"><a href="#${slug}" class="block text-blue-200 font-bold hover:text-blue-400 transition-colors text-sm" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                            } else if (level === 2) {
+                                tocHTML += `<li class="ml-3 border-l-2 border-slate-700/50 pl-3 py-1"><a href="#${slug}" class="block text-slate-400 text-sm hover:text-blue-300 transition-colors" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                            }
                         }
                     });
-                    attachmentsHTML += '</div>';
-                }
 
-                // Iframes do YouTube
-                let embedsHTML = '';
-                if (group.embeds && group.embeds.length > 0) {
-                    embedsHTML = '<div class="mt-6 flex flex-col gap-4">';
-                    group.embeds.forEach(embed => {
-                        if (embed.type === 'video' && embed.video && embed.video.url) {
-                            embedsHTML += `
-                                <div class="rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900/50 p-2">
-                                    <div class="relative w-full pb-[56.25%] h-0 rounded-lg overflow-hidden">
-                                        <iframe src="${embed.video.url}" class="absolute top-0 left-0 w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    // Substituir emojis no corpo
+                    rawContent = rawContent.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" alt=":$1:" class="inline-block h-6 w-6 align-middle">');
+                    
+                    // Fazer parse do Markdown para HTML
+                    let htmlContent = marked.parse(rawContent);
+
+                    // Imagens/Anexos vinculados ESPECIFICAMENTE a esta mensagem
+                    let attachmentsHTML = '';
+                    if (msg.attachments && msg.attachments.length > 0) {
+                        attachmentsHTML = '<div class="mt-4 flex flex-col gap-4">';
+                        msg.attachments.forEach(att => {
+                            if (att.content_type && att.content_type.startsWith('image/')) {
+                                attachmentsHTML += `
+                                <div class="rounded-xl overflow-hidden shadow-md border border-slate-700/50 bg-slate-900/50 max-w-full lg:max-w-3xl">
+                                    <img src="${att.url}" alt="${att.filename}" class="w-full h-auto object-contain max-h-[500px]" loading="lazy">
+                                </div>`;
+                            }
+                        });
+                        attachmentsHTML += '</div>';
+                    }
+
+                    // Videos do Youtube vinculados ESPECIFICAMENTE a esta mensagem
+                    let embedsHTML = '';
+                    if (msg.embeds && msg.embeds.length > 0) {
+                        embedsHTML = '<div class="mt-4 flex flex-col gap-4">';
+                        msg.embeds.forEach(embed => {
+                            if (embed.type === 'video' && embed.video && embed.video.url) {
+                                embedsHTML += `
+                                    <div class="rounded-xl overflow-hidden shadow-md border border-slate-700/50 bg-slate-900/50 p-2 max-w-full lg:max-w-3xl">
+                                        <div class="relative w-full pb-[56.25%] h-0 rounded-lg overflow-hidden">
+                                            <iframe src="${embed.video.url}" class="absolute top-0 left-0 w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                        </div>
+                                        ${embed.title ? `<p class="mt-2 text-sm text-slate-400 font-semibold text-center">${embed.title}</p>` : ''}
                                     </div>
-                                    ${embed.title ? `<p class="mt-2 text-sm text-slate-400 font-semibold text-center">${embed.title}</p>` : ''}
-                                </div>
-                            `;
-                        }
-                    });
-                    embedsHTML += '</div>';
-                }
+                                `;
+                            }
+                        });
+                        embedsHTML += '</div>';
+                    }
 
-                // Unir tudo
-                article.innerHTML = headerHTML + `<div class="prose max-w-none">${htmlContent}</div>` + attachmentsHTML + embedsHTML;
+                    // O espaçamento em "mb-6" separa os blocos de "texto + imagem" dentro do mesmo balão geral.
+                    bodyHTML += `
+                        <div class="msg-block mb-8 last:mb-0">
+                            ${htmlContent ? `<div class="prose max-w-none text-slate-300">${htmlContent}</div>` : ''}
+                            ${attachmentsHTML}
+                            ${embedsHTML}
+                        </div>
+                    `;
+                });
+
+                // Unir Cabeçalho e Corpo
+                article.innerHTML = headerHTML + bodyHTML;
                 contentContainer.appendChild(article);
             });
 
