@@ -1,672 +1,318 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>História da Névoa | Nin Online (Hawk)</title>
+    <title>História da Vila Oculta da Névoa</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- Marked.js para interpretar o Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        h1, h2, h3, .brand-font { font-family: 'Cinzel', serif; }
-        body { font-family: 'Lato', sans-serif; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #cbd5e1; /* Slate 300 */
+        }
         
-        .mist-bg {
-            background-color: #0f172a;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%);
-            background-attachment: fixed;
+        .mist-gradient {
+            background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
         }
 
-        .sub-menu-btn { padding-left: 2.5rem; font-size: 0.85rem; border-left: 2px solid #1e293b; }
-        .sub-menu-btn:hover { border-left-color: #38bdf8; }
+        /* Estilos do Markdown Gerado */
+        .prose h1 {
+            color: #f8fafc;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            scroll-margin-top: 100px; /* Evita que o cabeçalho fixo cubra o titulo ao navegar */
+        }
+        .prose h2 {
+            color: #e0f2fe;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            scroll-margin-top: 100px;
+        }
+        .prose p {
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+        }
+        .prose blockquote {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+            padding: 0.75rem 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-bottom: 1.25rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .prose a {
+            color: #60a5fa;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .prose a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+        .prose strong {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
         
-        blockquote { border-left: 4px solid #38bdf8; padding-left: 1rem; font-style: italic; color: #94a3b8; background: rgba(30, 41, 59, 0.5); padding: 1rem; border-radius: 0 0.5rem 0.5rem 0; margin: 1.5rem 0; }
-        
-        /* Editor Styles */
-        .editable-content { outline: none; }
-        .editable-content[contenteditable="true"] { border: 1px dashed #38bdf8; padding: 10px; background: rgba(56, 189, 248, 0.05); }
-        
-        #sidebar { display: flex; flex-direction: column; height: 100vh; position: fixed; z-index: 40; top: 0; left: 0; }
-        #sidebar-nav { flex: 1; overflow-y: auto; min-height: 0; }
-        #sidebar-footer { flex-shrink: 0; z-index: 10; }
-        
-        body { min-height: 100vh; overflow-x: hidden; }
-        #content-area { height: 100vh; overflow-y: auto; }
-
-        /* Controles de Imagem (Admin) */
-        .img-controls { opacity: 0; transition: opacity 0.2s; }
-        .custom-img-wrapper:hover .img-controls { opacity: 1; }
-
-        @media (max-width: 768px) {
-            #content-area { height: auto; overflow-y: visible; padding-top: 20px; padding-bottom: 80px; }
-            #sidebar { position: fixed; height: 100%; width: 80%; max-width: 300px; }
+        /* Menu Lateral Customizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
         }
     </style>
 </head>
-<body class="mist-bg text-slate-200 flex flex-col md:flex-row">
+<body class="mist-gradient h-screen overflow-hidden flex flex-col">
 
-    <!-- Mobile Header -->
-    <div class="md:hidden bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center z-30 sticky top-0 w-full shadow-md">
-        <span class="text-xl font-bold brand-font text-sky-400">Vila da Névoa</span>
-        <button onclick="toggleSidebar()" class="text-slate-200 focus:outline-none p-2"><i class="fas fa-bars text-2xl"></i></button>
-    </div>
-
-    <!-- Sidebar -->
-    <aside id="sidebar" class="transform -translate-x-full md:translate-x-0 w-64 bg-slate-900/95 border-r border-slate-700 transition-transform duration-300 ease-in-out shadow-2xl">
-        <div class="p-6 border-b border-slate-700 hidden md:block flex-shrink-0">
-            <h1 class="text-2xl font-bold brand-font text-sky-400 tracking-wider text-center"><i class="fas fa-water mr-2"></i>Kirigakure</h1>
-            <p class="text-xs text-slate-500 text-center mt-1">História da Névoa (Online)</p>
-        </div>
-
-        <nav id="sidebar-nav" class="p-4 space-y-2">
-            <div id="nav-loading" class="text-center text-slate-500 text-sm py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Carregando capítulos...</div>
-            <div id="dynamic-nav"></div>
-        </nav>
-
-        <div id="sidebar-footer" class="p-4 border-t border-slate-700 bg-slate-900">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-sky-900 flex items-center justify-center text-sky-200 font-bold">A</div>
-                    <div><p class="text-sm font-bold text-slate-200">Auriosh</p><p class="text-xs text-slate-500">Autor</p></div>
-                </div>
-                <button id="loginBtn" onclick="openLoginModal()" class="text-slate-600 hover:text-sky-400 p-2" title="Admin"><i class="fas fa-cog"></i></button>
-            </div>
+    <!-- Header / Navbar Superior -->
+    <header class="bg-slate-900/90 backdrop-blur-md z-40 border-b border-slate-800 shadow-md flex-shrink-0">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <h1 class="text-xl md:text-2xl font-bold text-blue-100 flex items-center gap-2">
+                <span class="text-2xl">🌫️</span> Arquivos da Névoa
+            </h1>
             
-            <div id="adminPanel" class="hidden mt-4 pt-4 border-t border-slate-700">
-                <p class="text-xs text-green-400 font-bold mb-2 flex items-center"><i class="fas fa-circle text-[8px] mr-2"></i> ADMIN ONLINE</p>
-                <p class="text-[10px] text-slate-400 mb-2 truncate" id="userEmailDisplay"></p>
-                
-                <div class="mb-2">
-                    <button onclick="openCreateChapterModal()" class="w-full bg-blue-700 hover:bg-blue-600 text-white text-[10px] font-bold py-2 px-1 rounded transition-colors text-center">
-                        <i class="fas fa-plus mr-1"></i> Criar/Editar Capítulo
-                    </button>
-                </div>
-                
-                <button onclick="handleLogout()" class="w-full bg-red-900/50 hover:bg-red-900 text-red-300 text-xs py-1 rounded transition-colors mt-2">Sair</button>
-            </div>
+            <!-- Botão Menu Mobile -->
+            <button id="menu-toggle" class="md:hidden text-slate-300 hover:text-white p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
         </div>
-    </aside>
+    </header>
 
-    <!-- Floating Admin Toolbar -->
-    <div id="adminToolbar" class="hidden fixed bottom-6 right-6 z-50 flex-col space-y-2">
-        <button onclick="saveChanges()" class="bg-green-600 hover:bg-green-500 text-white p-4 rounded-full shadow-xl transition-transform hover:scale-110" title="Salvar Alterações no Texto">
-            <i class="fas fa-save text-xl"></i>
-        </button>
-        <button onclick="openImageUrlModal()" class="bg-purple-600 hover:bg-purple-500 text-white p-4 rounded-full shadow-xl transition-transform hover:scale-110" title="Adicionar Imagem">
-            <i class="fas fa-image text-xl"></i>
-        </button>
-    </div>
-
-    <!-- Modal Login -->
-    <div id="loginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-80 m-4">
-            <h3 class="text-xl font-bold text-white mb-4">Acesso Admin</h3>
-            <input type="email" id="adminEmail" placeholder="Email" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white mb-2 focus:border-sky-500">
-            <input type="password" id="adminPassword" placeholder="Senha" onkeyup="if(event.key === 'Enter') handleLogin()" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white mb-4 focus:border-sky-500">
-            <div id="loginError" class="text-red-500 text-xs mb-3 hidden"></div>
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeLoginModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancelar</button>
-                <button onclick="handleLogin()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded font-bold" id="confirmLoginBtn">Entrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Adicionar Imagem (URL + Descrição) -->
-    <div id="imageUrlModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-[90%] max-w-md m-4">
-            <h3 class="text-xl font-bold text-white mb-4">Adicionar Imagem</h3>
-            
-            <div class="mb-4">
-                <label class="block text-xs text-slate-400 mb-1">Link da Imagem (URL)</label>
-                <input type="text" id="imgUrlInput" placeholder="https://..." class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-sm">
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-xs text-slate-400 mb-1">Descrição / Legenda</label>
-                <input type="text" id="imgDescInput" placeholder="Ex: Batalha no Vale..." class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-sm">
-            </div>
-            
-            <p class="text-xs text-sky-400 mb-4"><i class="fas fa-info-circle"></i> A imagem será inserida onde você clicou no texto.</p>
-
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeImageUrlModal()" class="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancelar</button>
-                <button onclick="confirmInsertImage()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded font-bold text-sm">Inserir</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Criar/Editar Capítulo -->
-    <div id="chapterModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="bg-slate-800 p-6 rounded-lg shadow-2xl border border-slate-600 w-[90%] max-w-2xl h-[90vh] flex flex-col m-4">
-            <h3 class="text-xl font-bold text-white mb-4">Gerenciar Capítulo</h3>
-            
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">ID (Único)</label>
-                    <input type="text" id="newChapterId" placeholder="ex: chapter1" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Título do Menu</label>
-                    <input type="text" id="newChapterTitle" placeholder="ex: O Início" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ícone (FontAwesome)</label>
-                    <input type="text" id="newChapterIcon" placeholder="fa-scroll" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ordem (Número)</label>
-                    <input type="number" id="newChapterOrder" placeholder="1" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Era / Grupo (Opcional)</label>
-                    <input type="text" id="newChapterEra" placeholder="ex: Era Acqua" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white focus:border-sky-500 text-xs">
-                </div>
-            </div>
-
-            <div class="flex-1 flex flex-col mb-4">
-                <label class="block text-xs text-slate-400 mb-1">Conteúdo HTML (Edição Avançada)</label>
-                <textarea id="newChapterHtml" class="flex-1 bg-slate-900 border border-slate-600 rounded p-4 text-white font-mono text-xs focus:border-sky-500 resize-none" placeholder="<div><h1>Título</h1><p>Conteúdo...</p></div>"></textarea>
-            </div>
-
-            <div class="flex justify-between items-center">
-                <p class="text-xs text-slate-500">Configure a ordem e a Era para organizar o menu.</p>
-                <div class="flex space-x-2">
-                    <button onclick="closeChapterModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancelar</button>
-                    <button id="saveChapterBtn" onclick="saveChapterToDb()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded font-bold">Salvar Capítulo</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="flex-1 w-full md:ml-64 relative" id="content-area">
-        <div class="max-w-4xl mx-auto p-6 md:p-12 pb-24" id="dynamic-content">
-            <div class="flex flex-col items-center justify-center h-64">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i>
-                <p class="text-slate-400">Conectando aos arquivos da Névoa...</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- Global Helpers Script (Standard JS) -->
-    <script>
-        function toggleSidebar() { 
-            document.getElementById('sidebar').classList.toggle('-translate-x-full'); 
-        }
+    <!-- Layout Principal: Menu Lateral (Esquerda) e Conteúdo (Direita) -->
+    <div class="flex flex-1 overflow-hidden">
         
-        function openLoginModal() { 
-            document.getElementById('loginModal').classList.remove('hidden'); 
-        }
-        
-        function closeLoginModal() { 
-            document.getElementById('loginModal').classList.add('hidden'); 
-        }
+        <!-- Menu Lateral (Índice) -->
+        <aside id="sidebar" class="w-72 bg-slate-900/80 border-r border-slate-800 flex-shrink-0 flex flex-col transition-transform duration-300 transform -translate-x-full md:translate-x-0 absolute md:relative z-30 h-full">
+            <div class="p-4 border-b border-slate-800">
+                <h3 class="text-lg font-bold text-slate-200">📖 Índice</h3>
+            </div>
+            <!-- Lista do Índice -->
+            <nav class="flex-1 overflow-y-auto p-4">
+                <ul id="toc-list" class="space-y-1">
+                    <!-- O índice será gerado via JS -->
+                </ul>
+            </nav>
+        </aside>
 
-        function closeChapterModal() {
-            document.getElementById('chapterModal').classList.add('hidden');
-        }
+        <!-- Overlay fundo escuro (para mobile quando o menu está aberto) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
 
-        function toggleSub(id) { 
-            const el = document.getElementById(id); 
-            if(el) {
-                el.classList.toggle('hidden'); 
-                el.classList.toggle('flex');
-                const arrow = document.getElementById('arrow-' + id.replace('-subs', ''));
-                if(arrow) arrow.classList.toggle('rotate-180');
-            }
-        }
+        <!-- Área de Conteúdo -->
+        <main class="flex-1 overflow-y-auto relative scroll-smooth" id="main-scroll-area">
+            <div class="max-w-4xl mx-auto px-4 py-8" id="content-container">
+                <!-- Loader -->
+                <div id="loading" class="text-center text-slate-400 py-20 flex flex-col items-center">
+                    <svg class="animate-spin h-8 w-8 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Buscando os registros da Névoa em dados.json...
+                </div>
+            </div>
 
-        // Funções para o Modal de Imagem
-        function openImageUrlModal() {
-            document.getElementById('imageUrlModal').classList.remove('hidden');
-            document.getElementById('imgUrlInput').focus();
-        }
+            <!-- Footer interno -->
+            <footer class="text-center py-6 text-slate-500 text-sm mt-12 border-t border-slate-800/50">
+                <p>Registros históricos da Vila Oculta da Névoa compilados por Auriosh.</p>
+            </footer>
+        </main>
+    </div>
 
-        function closeImageUrlModal() {
-            document.getElementById('imageUrlModal').classList.add('hidden');
-            document.getElementById('imgUrlInput').value = '';
-            document.getElementById('imgDescInput').value = '';
-        }
-
-        // Controles de Imagem (Mover/Deletar) - Definidos no escopo global
-        window.moveImgUp = (btn) => {
-            const wrapper = btn.closest('.custom-img-wrapper');
-            if (wrapper && wrapper.previousElementSibling) {
-                wrapper.parentNode.insertBefore(wrapper, wrapper.previousElementSibling);
-            }
-        };
-
-        window.moveImgDown = (btn) => {
-            const wrapper = btn.closest('.custom-img-wrapper');
-            if (wrapper && wrapper.nextElementSibling) {
-                wrapper.parentNode.insertBefore(wrapper.nextElementSibling, wrapper);
-            }
-        };
-
-        window.deleteImg = (btn) => {
-            if(confirm("Tem certeza que deseja excluir esta imagem?")) {
-                const wrapper = btn.closest('.custom-img-wrapper');
-                if(wrapper) wrapper.remove();
-            }
-        };
-
-        window.loadContent = (id) => console.log("Aguardando módulo...", id);
+    <!-- Fallback caso não consiga buscar de dados.json (usado para ambientes de preview online) -->
+    <script id="fallback-json" type="application/json">
+        [] 
     </script>
 
-    <!-- Firebase Logic (Module) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, getDoc, updateDoc, query } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC33QzesuQgO7Qtu6q6ci1EL1PnViPxub4",
-            authDomain: "historianevoa.firebaseapp.com",
-            projectId: "historianevoa",
-            storageBucket: "historianevoa.firebasestorage.app",
-            messagingSenderId: "341318354390",
-            appId: "1:341318354390:web:70787c80be301888e6d077",
-            measurementId: "G-C4NJBEZDCM"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let currentChapterId = 'intro';
-        let currentUser = null;
-        let chaptersCache = {}; 
-
-        // --- GLOBAL EXPORTS ---
+    <script>
+        // Configurando o Marked.js
+        marked.setOptions({ breaks: true, gfm: true });
         
-        window.handleLogin = async () => {
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPassword').value;
-            const btn = document.getElementById('confirmLoginBtn');
-            const err = document.getElementById('loginError');
-            
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true; err.classList.add('hidden');
-            try { await signInWithEmailAndPassword(auth, email, pass); closeLoginModal(); }
-            catch (e) { err.textContent = "Erro: " + e.message; err.classList.remove('hidden'); }
-            finally { btn.innerHTML = 'Entrar'; btn.disabled = false; }
-        };
-
-        window.handleLogout = () => signOut(auth);
-
-        window.scrollToAnchor = (id) => { 
-            const el = document.getElementById(id); 
-            if(el) el.scrollIntoView({behavior: 'smooth', block: 'start'}); 
-            if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
-        };
-
-        // Função Confirmar Imagem
-        window.confirmInsertImage = () => {
-            if (!currentUser) {
-                closeImageUrlModal();
-                return alert("Erro: Você precisa estar logado como Admin.");
-            }
-
-            const url = document.getElementById('imgUrlInput').value.trim();
-            const desc = document.getElementById('imgDescInput').value.trim();
-            
-            if (!url) return alert("Por favor, insira uma URL válida.");
-
-            // Cria o HTML da imagem com controles (inicialmente sem os controles visuais, o JS adiciona depois se precisar)
-            // Mas para facilitar, já estruturamos de forma que o injectAdminControls possa pegar depois.
-            // Para inserção dinâmica, criamos o elemento completo.
-            
-            const controlsHtml = `
-                <div class="img-controls absolute top-2 right-2 flex space-x-1 bg-black/50 p-1 rounded backdrop-blur-sm">
-                    <button onclick="moveImgUp(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-up"></i></button>
-                    <button onclick="moveImgDown(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-down"></i></button>
-                    <button onclick="deleteImg(this)" class="p-1 hover:text-red-400 text-white"><i class="fas fa-trash"></i></button>
-                </div>
-            `;
-
-            const imgHtml = `
-                <div class="custom-img-wrapper relative group my-6 text-center">
-                    <img src="${url}" class="w-full rounded shadow-lg border border-slate-700">
-                    ${desc ? `<p class="text-sm text-slate-400 mt-2 italic editable-text">${desc}</p>` : ''}
-                    ${controlsHtml}
-                </div>
-            `;
-
-            const wrapper = document.querySelector('.editable-wrapper');
-            if (wrapper) {
-                wrapper.focus(); // Garante foco
-                if (document.queryCommandSupported('insertHTML')) {
-                    document.execCommand('insertHTML', false, imgHtml);
-                } else {
-                    // Fallback: append at end
-                    wrapper.innerHTML += imgHtml;
-                }
-            } else {
-                alert("Abra um capítulo para inserir a imagem.");
-            }
-            
-            closeImageUrlModal();
-        };
-
-        // Função auxiliar para injetar controles em imagens já existentes ao carregar ou logar
-        function injectAdminControls() {
-            if (!currentUser) return;
-            const images = document.querySelectorAll('.editable-wrapper img');
-            
-            images.forEach(img => {
-                // Verifica se já está dentro de um wrapper nosso
-                if (img.closest('.custom-img-wrapper')) return; 
-                if (img.closest('.img-placeholder')) return; // Ignora placeholders antigos não usados
-
-                // Envolve imagens soltas (legado) em um wrapper com controles
-                const wrapper = document.createElement('div');
-                wrapper.className = "custom-img-wrapper relative group my-6 text-center";
-                
-                img.parentNode.insertBefore(wrapper, img);
-                wrapper.appendChild(img);
-                
-                // Adiciona controles
-                const controls = document.createElement('div');
-                controls.className = "img-controls absolute top-2 right-2 flex space-x-1 bg-black/50 p-1 rounded backdrop-blur-sm";
-                controls.innerHTML = `
-                    <button onclick="moveImgUp(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-up"></i></button>
-                    <button onclick="moveImgDown(this)" class="p-1 hover:text-sky-300 text-white"><i class="fas fa-arrow-down"></i></button>
-                    <button onclick="deleteImg(this)" class="p-1 hover:text-red-400 text-white"><i class="fas fa-trash"></i></button>
-                `;
-                wrapper.appendChild(controls);
-            });
+        // Elementos UI
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const menuBtn = document.getElementById('menu-toggle');
+        const contentContainer = document.getElementById('content-container');
+        const tocList = document.getElementById('toc-list');
+        const loading = document.getElementById('loading');
+        
+        // Controle do Menu Mobile
+        function toggleMenu() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        menuBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        
+        // Função para criar uma ID amigável (slug)
+        function createSlug(text) {
+            return text.replace(/<[^>]*>?/gm, '') // Remove HTML
+                       .replace(/\*\*/g, '')      // Remove asteriscos do markdown
+                       .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                       .replace(/[^\w\s-]/g, '')  // Remove caracteres especiais
+                       .trim().toLowerCase().replace(/\s+/g, '-');
         }
 
-        window.loadContent = async (chapterId) => {
-            currentChapterId = chapterId;
-            const container = document.getElementById('dynamic-content');
-            container.innerHTML = '<div class="flex flex-col items-center justify-center h-64 fade-in"><i class="fas fa-circle-notch fa-spin text-4xl text-sky-500 mb-4"></i><p class="text-slate-400">Buscando pergaminho...</p></div>';
-
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('border-sky-500', 'bg-slate-800', 'text-sky-300'));
-            
-            const activeBtn = document.getElementById(`btn-${chapterId}`);
-            if(activeBtn) activeBtn.classList.add('border-sky-500', 'bg-slate-800', 'text-sky-300');
-
-            document.querySelectorAll('.sub-menu-container').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="arrow-"]').forEach(el => el.classList.add('opacity-0'));
-
+        // 1. Carregar os Dados do arquivo JSON externo
+        async function fetchDados() {
             try {
-                let data = chaptersCache[chapterId];
-                if (!data) {
-                    const docRef = doc(db, "chapters", chapterId);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        data = docSnap.data();
-                        chaptersCache[chapterId] = data; 
-                    }
-                }
-
-                if (data) {
-                    let cleanHtml = data.html;
-                    // Limpeza de legado
-                    if (cleanHtml.includes('fa-spinner') && cleanHtml.includes('Carregando')) {
-                        cleanHtml = cleanHtml.replace(/<i class="fas fa-spinner fa-spin"><\/i>\s*Carregando\.\.\./g, 'Adicionar Imagem');
-                        cleanHtml = cleanHtml.replace(/disabled=""/g, '').replace(/disabled/g, '');
-                    }
-
-                    container.innerHTML = `<div class="fade-in editable-wrapper outline-none" ${currentUser ? 'contenteditable="true"' : ''}>${cleanHtml}</div>`;
-                    
-                    if(currentUser) {
-                        injectAdminControls();
-                        container.querySelector('.editable-wrapper').classList.add('editable-content');
-                    }
-
-                    detectAndBuildSubMenu(chapterId);
-                } else {
-                    container.innerHTML = `<div class="text-center mt-10"><p class="text-slate-400">Capítulo não encontrado.</p></div>`;
-                }
-                
-                if(window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
-                document.getElementById('content-area').scrollTo({top:0, behavior:'smooth'});
-
+                // Tenta carregar o arquivo externo que foi gerado junto
+                const response = await fetch('dados.json');
+                if (!response.ok) throw new Error("Não foi possível acessar dados.json");
+                const data = await response.json();
+                processarDados(data);
             } catch (error) {
-                console.error(error);
-                container.innerHTML = `<div class="text-red-400 p-4 border border-red-800 rounded">Erro: ${error.message}</div>`;
-            }
-        };
-
-        window.saveChanges = async () => {
-            if (!currentUser) return alert("Erro: Login de administrador necessário para salvar.");
-            
-            // Clona o conteúdo para limpar os controles antes de salvar
-            const wrapper = document.querySelector('.editable-wrapper');
-            const clone = wrapper.cloneNode(true);
-            
-            // Remove os controles de admin do clone
-            clone.querySelectorAll('.img-controls').forEach(el => el.remove());
-            
-            // Opcional: Remove classes de edição temporárias se houver
-            // Mas mantemos a estrutura wrapper para re-injeção futura
-            
-            const content = clone.innerHTML;
-            
-            try {
-                await setDoc(doc(db, "chapters", currentChapterId), { html: content, lastUpdated: new Date(), updatedBy: currentUser.email }, { merge: true });
-                alert("Salvo na nuvem com sucesso!");
-                if(chaptersCache[currentChapterId]) chaptersCache[currentChapterId].html = content;
-                
-                // Re-injeta controles no DOM original caso tenham se perdido (embora não devam)
-                injectAdminControls();
-            } catch (e) { alert("Erro ao salvar: " + e.message); }
-        };
-
-        window.saveChapterToDb = async () => {
-            if (!currentUser) return alert("Erro: Login de administrador necessário.");
-            const btn = document.getElementById('saveChapterBtn');
-            const id = document.getElementById('newChapterId').value.trim();
-            const title = document.getElementById('newChapterTitle').value;
-            const icon = document.getElementById('newChapterIcon').value || 'fa-book';
-            const order = parseInt(document.getElementById('newChapterOrder').value) || 999;
-            const era = document.getElementById('newChapterEra').value;
-            const html = document.getElementById('newChapterHtml').value;
-            
-            if(!id || !html) return alert("Preencha ID e HTML");
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
-
-            const chapterData = {
-                html: html,
-                title: title,
-                icon: icon,
-                order: order,
-                era: era,
-                updatedBy: currentUser.email,
-                lastUpdated: new Date()
-            };
-
-            try {
-                await setDoc(doc(db, "chapters", id), chapterData);
-                chaptersCache[id] = chapterData;
-                await fetchAndRenderMenu();
-                
-                alert("Capítulo salvo com sucesso!");
-                closeChapterModal();
-                window.loadContent(id);
-
-            } catch (error) {
-                alert("Erro ao salvar: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Salvar Capítulo';
-            }
-        };
-
-        window.openCreateChapterModal = async () => {
-            if (currentChapterId && chaptersCache[currentChapterId]) {
-                const data = chaptersCache[currentChapterId];
-                document.getElementById('newChapterId').value = currentChapterId;
-                document.getElementById('newChapterTitle').value = data.title || '';
-                document.getElementById('newChapterIcon').value = data.icon || 'fa-book';
-                document.getElementById('newChapterOrder').value = data.order || 999;
-                document.getElementById('newChapterEra').value = data.era || '';
-                // Limpa controles do HTML raw também se for editar por lá
-                let rawHtml = data.html;
-                // Uma limpeza simples de string para evitar poluição visual no textarea
-                rawHtml = rawHtml.replace(/<div class="img-controls.*?<\/div>/g, '');
-                document.getElementById('newChapterHtml').value = rawHtml;
-            } else {
-                document.getElementById('newChapterId').value = '';
-                document.getElementById('newChapterTitle').value = '';
-                document.getElementById('newChapterIcon').value = 'fa-book';
-                document.getElementById('newChapterOrder').value = '';
-                document.getElementById('newChapterEra').value = '';
-                document.getElementById('newChapterHtml').value = '';
-            }
-            document.getElementById('chapterModal').classList.remove('hidden');
-        };
-
-        window.enableEditing = () => { 
-            const w = document.querySelector('.editable-wrapper'); 
-            if(w) { 
-                w.contentEditable = "true"; 
-                w.classList.add('editable-content'); 
-                injectAdminControls(); // Garante que imagens antigas ganhem controles
-            } 
-        };
-
-        async function fetchAndRenderMenu() {
-            document.getElementById('nav-loading').style.display = 'block';
-            try {
-                const q = query(collection(db, "chapters"));
-                const querySnapshot = await getDocs(q);
-                let chapters = [];
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    chapters.push({ id: doc.id, ...data });
-                    chaptersCache[doc.id] = data; 
-                });
-                
-                chapters.sort((a, b) => (a.order || 999) - (b.order || 999));
-                
-                const nav = document.getElementById('dynamic-nav');
-                nav.innerHTML = '';
-                
-                if (chapters.length === 0) {
-                     nav.innerHTML = `<div class="text-center text-slate-500 text-xs p-4">Nenhum capítulo encontrado.</div>`;
-                } else {
-                    // Carregamento inteligente inicial
-                    const firstChapterId = chapters[0].id;
-                    const introExists = chapters.find(c => c.id === 'intro');
-                    
-                    // Se estivermos no "intro" padrão e ele não existir na lista, ou se for o carregamento inicial, carrega o primeiro da lista
-                    if (currentChapterId === 'intro' && !introExists) {
-                        window.loadContent(firstChapterId);
-                    } else if (currentChapterId === 'intro' && document.getElementById('dynamic-content').innerHTML.includes('Conectando')) {
-                        window.loadContent('intro');
-                    }
-                }
-
-                let currentEra = '';
-
-                chapters.forEach(item => {
-                    if (item.era && item.era !== currentEra) {
-                        currentEra = item.era;
-                        nav.innerHTML += `<div class="pt-4 pb-1"><p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-800 pb-1 mb-1">${currentEra}</p></div>`;
-                    }
-
-                    let html = `<div class="w-full">
-                        <button id="btn-${item.id}" onclick="loadContent('${item.id}')" class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-slate-300 hover:text-sky-300 border-l-2 border-transparent hover:border-sky-500 flex justify-between items-center group">
-                            <span class="flex items-center"><i class="fas ${item.icon || 'fa-book'} w-5 text-center mr-2 text-slate-500 group-hover:text-sky-400"></i> ${item.title || item.id}</span>
-                            <i class="fas fa-chevron-down text-xs opacity-0 transition-opacity" id="arrow-${item.id}"></i>
-                        </button>
-                        <div id="${item.id}-subs" class="sub-menu-container hidden flex-col space-y-1"></div>
+                console.error("Erro ao tentar buscar o dados.json externo.", error);
+                loading.innerHTML = `
+                    <div class="text-red-400 p-6 border border-red-500/30 rounded-xl bg-red-900/10">
+                        <h2 class="font-bold text-lg mb-2">Erro de conexão com dados.json</h2>
+                        <p class="text-sm">Se você estiver executando isso localmente (direto no navegador), ele pode bloquear o arquivo devido à política de CORS.<br> 
+                        Recomendação: Abra o <b>index.html</b> usando uma extensão como o <i>Live Server</i> do VSCode ou coloque-o em um pequeno servidor web.</p>
                     </div>`;
-                    nav.innerHTML += html;
-                });
-
-                document.getElementById('nav-loading').style.display = 'none';
-                
-                if (currentChapterId && chaptersCache[currentChapterId]) {
-                    const activeBtn = document.getElementById(`btn-${currentChapterId}`);
-                    if(activeBtn) activeBtn.classList.add('border-sky-500', 'bg-slate-800', 'text-sky-300');
-                }
-
-            } catch (e) {
-                console.error("Erro ao buscar menu:", e);
-                document.getElementById('nav-loading').innerHTML = "Erro ao carregar menu.";
             }
         }
 
-        function detectAndBuildSubMenu(chapterId) {
-            const subContainer = document.getElementById(`${chapterId}-subs`);
-            const arrow = document.getElementById(`arrow-${chapterId}`);
-            if (!subContainer) return;
-
-            const content = document.getElementById('dynamic-content');
-            const headers = content.querySelectorAll('h2');
+        // 2. Renderizar os dados e extrair informações para o Índice
+        function processarDados(rawData) {
+            loading.style.display = 'none'; // Esconder loader
             
-            if (headers.length > 0) {
-                let html = '';
-                headers.forEach((header, index) => {
-                    if (!header.id) {
-                        if (header.parentElement && header.parentElement.id) {
-                            header.id = header.parentElement.id + '-title'; 
-                        } else {
-                            header.id = `auto-sec-${chapterId}-${index}`;
+            // Ordenar do mais antigo para o mais novo
+            const sortedData = rawData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            
+            const discordEmojiRegex = /<:([a-zA-Z0-9_]+):(\d+)>/g;
+            let tocHTML = '';
+
+            sortedData.forEach((msg) => {
+                let rawContent = msg.content || "";
+                
+                // Extração dos Títulos para o Índice e injeção de Âncoras
+                const lines = rawContent.split('\n');
+                lines.forEach(line => {
+                    const match = line.match(/^(#{1,2})\s+(.*)$/); // Pega linhas com # ou ##
+                    if (match) {
+                        const level = match[1].length; 
+                        let text = match[2];
+                        
+                        // ID Baseado no texto limpo
+                        const slug = createSlug(text);
+                        
+                        // Substitui Emojis do Discord apenas para o nome que vai aparecer no índice
+                        let tocText = text.replace(/\*\*/g, '') // remove markdown bold pro indice
+                                          .replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
+                        
+                        // Injeta uma âncora de ID direto no markdown para a navegação funcionar
+                        rawContent = rawContent.replace(line, `<div id="${slug}"></div>\n${line}`);
+                        
+                        // Adiciona no HTML do Índice
+                        if (level === 1) {
+                            tocHTML += `<li class="pt-3 pb-1"><a href="#${slug}" class="block text-blue-200 font-bold hover:text-blue-400 transition-colors text-sm" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                        } else if (level === 2) {
+                            tocHTML += `<li class="ml-3 border-l-2 border-slate-700/50 pl-3 py-1"><a href="#${slug}" class="block text-slate-400 text-sm hover:text-blue-300 transition-colors" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
                         }
                     }
-                    const targetId = header.parentElement && header.parentElement.id && header.parentElement.id.startsWith('sec-') ? header.parentElement.id : header.id;
-                    const title = header.innerText;
-                    html += `<button onclick="scrollToAnchor('${targetId}')" class="sub-menu-btn w-full text-left py-2 rounded hover:text-sky-300 text-slate-400 transition-colors text-xs truncate">${title}</button>`;
                 });
-                subContainer.innerHTML = html;
-                subContainer.classList.remove('hidden');
-                subContainer.classList.add('flex');
-                if(arrow) arrow.classList.remove('opacity-0');
-            }
+
+                // Substituir emojis do discord no corpo da mensagem
+                rawContent = rawContent.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" alt=":$1:" class="inline-block h-6 w-6 align-middle">');
+                
+                // Fazer parse do Markdown para HTML
+                let htmlContent = marked.parse(rawContent);
+
+                // Criar Bloco Visual do Artigo
+                const article = document.createElement('article');
+                article.className = 'mb-10 bg-slate-800/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-700/50 hover:border-slate-600 transition-colors';
+
+                // Cabeçalho (Autor, Avatar, Data)
+                const dateObj = new Date(msg.timestamp);
+                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const avatarUrl = msg.author.avatar 
+                    ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png` 
+                    : `https://cdn.discordapp.com/embed/avatars/${parseInt(msg.author.discriminator) % 5}.png`;
+                const displayName = msg.author.global_name || msg.author.username;
+
+                let headerHTML = `
+                    <div class="flex items-center mb-5 pb-4 border-b border-slate-700/50">
+                        <img src="${avatarUrl}" class="w-12 h-12 rounded-full mr-4 shadow-sm" alt="${displayName}">
+                        <div>
+                            <div class="font-bold text-blue-300 text-lg leading-tight">${displayName}</div>
+                            <div class="text-xs text-slate-400 mt-1">${dateStr}</div>
+                        </div>
+                    </div>
+                `;
+
+                // Anexos de Imagens
+                let attachmentsHTML = '';
+                if (msg.attachments && msg.attachments.length > 0) {
+                    attachmentsHTML = '<div class="mt-6 flex flex-col gap-4">';
+                    msg.attachments.forEach(att => {
+                        if (att.content_type && att.content_type.startsWith('image/')) {
+                            attachmentsHTML += `
+                            <div class="rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900/50">
+                                <img src="${att.url}" alt="${att.filename}" class="w-full h-auto object-contain max-h-[600px] hover:scale-[1.02] transition-transform duration-300" loading="lazy">
+                            </div>`;
+                        }
+                    });
+                    attachmentsHTML += '</div>';
+                }
+
+                // Iframes do YouTube
+                let embedsHTML = '';
+                if (msg.embeds && msg.embeds.length > 0) {
+                    embedsHTML = '<div class="mt-6 flex flex-col gap-4">';
+                    msg.embeds.forEach(embed => {
+                        if (embed.type === 'video' && embed.video && embed.video.url) {
+                            embedsHTML += `
+                                <div class="rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900/50 p-2">
+                                    <div class="relative w-full pb-[56.25%] h-0 rounded-lg overflow-hidden">
+                                        <iframe src="${embed.video.url}" class="absolute top-0 left-0 w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>
+                                    ${embed.title ? `<p class="mt-2 text-sm text-slate-400 font-semibold text-center">${embed.title}</p>` : ''}
+                                </div>
+                            `;
+                        }
+                    });
+                    embedsHTML += '</div>';
+                }
+
+                // Unir tudo
+                article.innerHTML = headerHTML + `<div class="prose max-w-none">${htmlContent}</div>` + attachmentsHTML + embedsHTML;
+                contentContainer.appendChild(article);
+            });
+
+            // Atualizar o container do índice
+            tocList.innerHTML = tocHTML;
         }
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('loginBtn').classList.add('hidden');
-                document.getElementById('userEmailDisplay').textContent = user.email;
-                document.getElementById('adminToolbar').classList.remove('hidden');
-                document.getElementById('adminToolbar').classList.add('flex');
-                
-                // Ativa edição e controles se já houver conteúdo carregado
-                const content = document.querySelector('.editable-wrapper');
-                if(content) {
-                    content.contentEditable = "true";
-                    content.classList.add('editable-content');
-                    injectAdminControls();
-                }
-            } else {
-                document.getElementById('adminPanel').classList.add('hidden');
-                document.getElementById('loginBtn').classList.remove('hidden');
-                document.getElementById('adminToolbar').classList.add('hidden');
-                document.getElementById('adminToolbar').classList.remove('flex');
-                
-                const content = document.getElementById('dynamic-content');
-                if(content) {
-                    const wrapper = content.querySelector('.editable-wrapper');
-                    if(wrapper) wrapper.contentEditable = "false";
-                    // Remove controles visuais ao deslogar
-                    document.querySelectorAll('.img-controls').forEach(el => el.remove());
-                }
-            }
-        });
-
-        fetchAndRenderMenu();
-
+        // Inicia
+        fetchDados();
     </script>
 </body>
 </html>
