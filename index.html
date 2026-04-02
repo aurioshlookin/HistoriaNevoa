@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,19 +25,22 @@
             background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
         }
 
-        /* Estilos do Markdown Geral (Fora da caixa de mídia) */
+        /* Estilos do Markdown Geral (Ajustados para parecer com o Discord) */
         .prose p {
-            margin-bottom: 1.25rem;
-            line-height: 1.8;
-            font-size: 1.1rem;
+            margin-bottom: 0.75rem; /* Margem reduzida */
+            line-height: 1.5; /* Espaçamento de linha mais compacto */
+            font-size: 1.05rem;
             color: #e2e8f0;
+        }
+        .prose p:last-child {
+            margin-bottom: 0;
         }
         .prose blockquote {
             border-left: 4px solid #3b82f6;
             background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
-            padding: 1rem 1.25rem;
+            padding: 0.5rem 1rem; /* Padding reduzido */
             border-radius: 0 0.5rem 0.5rem 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem; /* Margem reduzida */
             color: #94a3b8;
             font-style: italic;
         }
@@ -61,16 +64,13 @@
         /* Estilo específico para textos que são legendas de imagens (Dentro da caixa) */
         .media-caption p {
             margin-bottom: 0.5rem;
-            font-size: 1.05rem;
-        }
-        .media-caption p:last-child {
-            margin-bottom: 0;
+            font-size: 1rem;
         }
         .media-caption blockquote {
             border-left: 3px solid #64748b; /* Estilo sutil de citação do Discord */
             background: transparent;
             padding: 0 0 0 1rem;
-            margin: 0 0 1rem 0;
+            margin: 0 0 0.75rem 0;
             color: #cbd5e1;
             font-style: italic;
             border-radius: 0;
@@ -130,7 +130,7 @@
         <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
 
         <!-- Área de Conteúdo -->
-        <main class="flex-1 overflow-y-auto relative scroll-smooth" id="main-scroll-area">
+        <main class="flex-1 overflow-y-auto relative" id="main-scroll-area">
             <div class="max-w-4xl mx-auto px-4 py-8" id="content-container">
                 <!-- Loader -->
                 <div id="loading" class="text-center text-slate-400 py-20 flex flex-col items-center">
@@ -178,6 +178,27 @@
                        .trim().toLowerCase().replace(/\s+/g, '-');
         }
 
+        // JS preciso para Rolagem (Corrige o bug do clique duplo)
+        window.handleTocClick = function(event, slug) {
+            event.preventDefault();
+            const target = document.getElementById(slug);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            if (window.innerWidth < 768) toggleMenu();
+        };
+
+        // Expansão do Menu Lateral
+        window.toggleSubChapters = function(slug) {
+            const subsList = document.getElementById(`subs-${slug}`);
+            const btnIcon = document.querySelector(`#btn-${slug} svg`);
+            if (subsList) {
+                subsList.classList.toggle('hidden');
+                subsList.classList.toggle('flex');
+                if (btnIcon) btnIcon.classList.toggle('rotate-180');
+            }
+        };
+
         // 1. Carregar os Dados do arquivo JSON externo
         async function fetchDados() {
             try {
@@ -203,43 +224,41 @@
             // Ordenar do mais antigo para o mais novo
             const sortedData = rawData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
             const discordEmojiRegex = /<:([a-zA-Z0-9_]+):(\d+)>/g;
-            let tocHTML = '';
+            
+            // Objeto para organizar o Menu em Árvore (Capítulos -> Subcapítulos)
+            const tocTree = [];
 
             // 3. Agrupar mensagens pelo cabeçalho (# ou ##)
             const groupedData = [];
             let currentGroup = null;
 
             sortedData.forEach(msg => {
-                // Verifica se a mensagem atual contém um título principal (# ou ##)
                 const hasHeading = /^(#{1,2})\s+(.*)$/m.test(msg.content || "");
-                
                 if (hasHeading || !currentGroup) {
-                    currentGroup = {
-                        messages: [msg] // Salva as mensagens originais na ordem
-                    };
+                    currentGroup = { messages: [msg] };
                     groupedData.push(currentGroup);
                 } else {
                     currentGroup.messages.push(msg);
                 }
             });
 
-            // 4. Renderizar o HTML dos Grupos e Montar o Índice
+            let currentChapterTree = null; // Rastreador para a montagem do menu
+
+            // 4. Renderizar o HTML dos Grupos e Extrair Dados para o Menu
             groupedData.forEach((group) => {
-                // Removemos os avatares e fundo de "cartão", mantendo um layout fluido de página
                 const article = document.createElement('article');
-                article.className = 'mb-12 relative';
+                article.className = 'mb-10 relative';
 
                 let bodyHTML = '';
 
-                // Renderiza cada mensagem individualmente dentro do mesmo capítulo
-                group.messages.forEach((msg, index) => {
+                group.messages.forEach((msg) => {
                     let rawContent = msg.content || "";
                     let headingsHTML = '';
                     
-                    // Separar Títulos e Textos
                     const lines = rawContent.split('\n');
                     let remainingLines = [];
 
+                    // Extração de Títulos e Preenchimento da Árvore do Menu
                     lines.forEach(line => {
                         const match = line.match(/^(#{1,2})\s+(.*)$/); 
                         if (match) {
@@ -247,56 +266,46 @@
                             let rawText = match[2];
                             const slug = createSlug(rawText);
                             
-                            // Limpa ** do texto base
+                            // Limpa ** do texto
                             let cleanText = rawText.replace(/\*\*/g, '');
-                            
-                            // Título para o Menu
                             let tocText = cleanText.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block w-4 h-4 mr-1 align-middle">');
-                            
-                            // Título Gigante pra visualização real na tela
                             let displayText = cleanText.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" class="inline-block h-8 w-8 mx-2 align-middle">');
                             
-                            // Criação dos botões do índice e injeção do Título formatado fora do Parse Markdown
                             if (level === 1) {
-                                tocHTML += `<li class="pt-3 pb-1"><a href="#${slug}" class="block text-blue-200 font-bold hover:text-blue-400 transition-colors text-sm" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                                // Cria um novo nó principal no menu
+                                currentChapterTree = { slug, tocText, subs: [] };
+                                tocTree.push(currentChapterTree);
                                 headingsHTML += `<h1 id="${slug}" class="text-3xl md:text-4xl font-extrabold text-white mt-12 mb-6 border-b-2 border-blue-500/50 pb-4 flex items-center scroll-mt-24 tracking-tight">${displayText}</h1>`;
                             } else if (level === 2) {
-                                tocHTML += `<li class="ml-3 border-l-2 border-slate-700/50 pl-3 py-1"><a href="#${slug}" class="block text-slate-400 text-sm hover:text-blue-300 transition-colors" onclick="if(window.innerWidth < 768) toggleMenu()">${tocText}</a></li>`;
+                                // Adiciona como subcapítulo do nó atual
+                                if (currentChapterTree) {
+                                    currentChapterTree.subs.push({ slug, tocText });
+                                }
                                 headingsHTML += `<h2 id="${slug}" class="text-2xl md:text-3xl font-bold text-blue-100 mt-10 mb-5 scroll-mt-24 flex items-center tracking-tight">${displayText}</h2>`;
                             }
                         } else {
-                            // Se não for título, mantem como texto normal
                             remainingLines.push(line);
                         }
                     });
 
-                    // Parse do que não era título
+                    // Renderização de Conteúdo
                     rawContent = remainingLines.join('\n').trim();
                     rawContent = rawContent.replace(discordEmojiRegex, '<img src="https://cdn.discordapp.com/emojis/$2.png" alt=":$1:" class="inline-block h-6 w-6 align-middle">');
                     let htmlContent = rawContent ? marked.parse(rawContent) : '';
 
-                    // Verificar se existe mídia nesta mensagem específica
                     const hasMedia = (msg.attachments && msg.attachments.length > 0) || (msg.embeds && msg.embeds.length > 0);
 
-                    // 1º Insere os Títulos Isolados (se houver)
-                    if (headingsHTML) {
-                        bodyHTML += headingsHTML;
-                    }
+                    if (headingsHTML) bodyHTML += headingsHTML;
 
-                    // 2º Insere o Conteúdo (Mídia com Legenda VS Apenas Texto)
                     if (htmlContent || hasMedia) {
                         if (hasMedia) {
-                            // Caixa Unificada de Mídia + Legenda
                             let mediaBoxContent = '';
-                            
-                            // Legenda vinculada à mídia
                             if (htmlContent) {
-                                mediaBoxContent += `<div class="p-5 md:p-6 pb-2 prose max-w-none media-caption">${htmlContent}</div>`;
+                                mediaBoxContent += `<div class="p-4 md:p-5 pb-2 prose max-w-none media-caption">${htmlContent}</div>`;
                             }
                             
-                            // Anexos (Imagens)
                             if (msg.attachments && msg.attachments.length > 0) {
-                                mediaBoxContent += '<div class="px-5 md:px-6 pb-5 md:pb-6 flex flex-col gap-4">';
+                                mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 flex flex-col gap-4">';
                                 msg.attachments.forEach(att => {
                                     if (att.content_type && att.content_type.startsWith('image/')) {
                                         mediaBoxContent += `<img src="${att.url}" alt="${att.filename}" class="w-full h-auto rounded-xl shadow-lg border border-slate-700/50 object-contain max-h-[600px]" loading="lazy">`;
@@ -305,9 +314,8 @@
                                 mediaBoxContent += '</div>';
                             }
 
-                            // Embeds (Vídeos do YouTube)
                             if (msg.embeds && msg.embeds.length > 0) {
-                                mediaBoxContent += '<div class="px-5 md:px-6 pb-5 md:pb-6 flex flex-col gap-4">';
+                                mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 flex flex-col gap-4">';
                                 msg.embeds.forEach(embed => {
                                     if (embed.type === 'video' && embed.video && embed.video.url) {
                                         mediaBoxContent += `
@@ -321,18 +329,16 @@
                                 mediaBoxContent += '</div>';
                             }
 
-                            // Renderiza a Caixa Escura Unida
                             bodyHTML += `
-                                <div class="msg-block mb-8">
+                                <div class="msg-block mb-6">
                                     <div class="bg-slate-800/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-md border border-slate-700/60 max-w-full lg:max-w-4xl mx-auto">
                                         ${mediaBoxContent}
                                     </div>
                                 </div>
                             `;
                         } else {
-                            // Parágrafos soltos, fluindo normalmente fora da caixa
                             bodyHTML += `
-                                <div class="msg-block mb-6">
+                                <div class="msg-block mb-4">
                                     <div class="prose max-w-none text-slate-300">${htmlContent}</div>
                                 </div>
                             `;
@@ -340,13 +346,40 @@
                     }
                 });
 
-                // Insere no Layout
                 article.innerHTML = bodyHTML;
                 contentContainer.appendChild(article);
             });
 
-            // Atualizar o container do índice
-            tocList.innerHTML = tocHTML;
+            // 5. Montar o HTML Interativo do Menu Lateral (TOC)
+            let finalTocHTML = '';
+            tocTree.forEach((chapter, index) => {
+                const hasSubs = chapter.subs && chapter.subs.length > 0;
+                // Abre o primeiro capítulo por padrão (opcional), os outros fechados
+                const isFirst = index === 0; 
+                
+                finalTocHTML += `
+                <li class="pt-2 pb-1 border-b border-slate-800/50 last:border-0">
+                    <div class="flex items-center justify-between group">
+                        <a href="#${chapter.slug}" class="block text-blue-200 font-bold hover:text-blue-400 transition-colors text-sm py-2 flex-1" onclick="handleTocClick(event, '${chapter.slug}')">${chapter.tocText}</a>
+                        ${hasSubs ? `
+                        <button onclick="toggleSubChapters('${chapter.slug}')" class="text-slate-400 hover:text-white p-2 outline-none" id="btn-${chapter.slug}">
+                            <svg class="w-4 h-4 transition-transform duration-200 ${isFirst ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        ` : ''}
+                    </div>
+                    ${hasSubs ? `
+                    <ul id="subs-${chapter.slug}" class="${isFirst ? 'flex' : 'hidden'} flex-col space-y-1 mt-1 mb-3">
+                        ${chapter.subs.map(sub => `
+                            <li class="ml-2 border-l-2 border-slate-700/50 pl-3 py-1">
+                                <a href="#${sub.slug}" class="block text-slate-400 text-sm hover:text-blue-300 transition-colors" onclick="handleTocClick(event, '${sub.slug}')">${sub.tocText}</a>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    ` : ''}
+                </li>
+                `;
+            });
+            tocList.innerHTML = finalTocHTML;
         }
 
         // Inicia
