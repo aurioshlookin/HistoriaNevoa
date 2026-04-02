@@ -210,8 +210,34 @@
             const discordEmojiRegex = /<:([a-zA-Z0-9_]+):(\d+)>/g;
             let tocHTML = '';
 
-            sortedData.forEach((msg) => {
-                let rawContent = msg.content || "";
+            // Agrupar mensagens pelo cabeçalho (# ou ##)
+            const groupedData = [];
+            let currentGroup = null;
+
+            sortedData.forEach(msg => {
+                // Verifica se a mensagem contém um título principal (# ou ##)
+                const hasHeading = /^(#{1,2})\s+(.*)$/m.test(msg.content || "");
+                
+                if (hasHeading || !currentGroup) {
+                    // Cria um novo balão
+                    currentGroup = {
+                        author: msg.author,
+                        timestamp: msg.timestamp,
+                        content: msg.content || "",
+                        attachments: [...(msg.attachments || [])],
+                        embeds: [...(msg.embeds || [])]
+                    };
+                    groupedData.push(currentGroup);
+                } else {
+                    // Adiciona conteúdo ao balão atual
+                    if (msg.content) currentGroup.content += '\n\n' + msg.content;
+                    if (msg.attachments) currentGroup.attachments.push(...msg.attachments);
+                    if (msg.embeds) currentGroup.embeds.push(...msg.embeds);
+                }
+            });
+
+            groupedData.forEach((group) => {
+                let rawContent = group.content || "";
                 
                 // Extração dos Títulos para o Índice e injeção de Âncoras
                 const lines = rawContent.split('\n');
@@ -251,12 +277,12 @@
                 article.className = 'mb-10 bg-slate-800/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-700/50 hover:border-slate-600 transition-colors';
 
                 // Cabeçalho (Autor, Avatar, Data)
-                const dateObj = new Date(msg.timestamp);
+                const dateObj = new Date(group.timestamp);
                 const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const avatarUrl = msg.author.avatar 
-                    ? `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.png` 
-                    : `https://cdn.discordapp.com/embed/avatars/${parseInt(msg.author.discriminator) % 5}.png`;
-                const displayName = msg.author.global_name || msg.author.username;
+                const avatarUrl = group.author.avatar 
+                    ? `https://cdn.discordapp.com/avatars/${group.author.id}/${group.author.avatar}.png` 
+                    : `https://cdn.discordapp.com/embed/avatars/${parseInt(group.author.discriminator || 0) % 5}.png`;
+                const displayName = group.author.global_name || group.author.username;
 
                 let headerHTML = `
                     <div class="flex items-center mb-5 pb-4 border-b border-slate-700/50">
@@ -270,9 +296,9 @@
 
                 // Anexos de Imagens
                 let attachmentsHTML = '';
-                if (msg.attachments && msg.attachments.length > 0) {
+                if (group.attachments && group.attachments.length > 0) {
                     attachmentsHTML = '<div class="mt-6 flex flex-col gap-4">';
-                    msg.attachments.forEach(att => {
+                    group.attachments.forEach(att => {
                         if (att.content_type && att.content_type.startsWith('image/')) {
                             attachmentsHTML += `
                             <div class="rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900/50">
@@ -285,9 +311,9 @@
 
                 // Iframes do YouTube
                 let embedsHTML = '';
-                if (msg.embeds && msg.embeds.length > 0) {
+                if (group.embeds && group.embeds.length > 0) {
                     embedsHTML = '<div class="mt-6 flex flex-col gap-4">';
-                    msg.embeds.forEach(embed => {
+                    group.embeds.forEach(embed => {
                         if (embed.type === 'video' && embed.video && embed.video.url) {
                             embedsHTML += `
                                 <div class="rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900/50 p-2">
