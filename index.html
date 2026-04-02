@@ -331,7 +331,10 @@
                                 mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 flex flex-col gap-4">';
                                 msg.attachments.forEach(att => {
                                     if (att.content_type && att.content_type.startsWith('image/')) {
-                                        mediaBoxContent += `<img src="${att.url}" alt="${att.filename}" class="w-full h-auto rounded-xl shadow-lg border border-slate-700/50 object-contain max-h-[600px]" loading="lazy">`;
+                                        // Pegamos as dimensões fornecidas pelo Discord para evitar o pulo de tela no scroll
+                                        const widthAttr = att.width ? `width="${att.width}"` : '';
+                                        const heightAttr = att.height ? `height="${att.height}"` : '';
+                                        mediaBoxContent += `<img src="${att.url}" alt="${att.filename}" ${widthAttr} ${heightAttr} class="w-full h-auto rounded-xl shadow-lg border border-slate-700/50 object-contain max-h-[600px]">`;
                                     }
                                 });
                                 mediaBoxContent += '</div>';
