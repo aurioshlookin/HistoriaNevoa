@@ -25,27 +25,49 @@
             background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
         }
 
-        /* Estilos do Markdown Geral (Ajustados para parecer com o Discord) */
+        /* Estilos do Markdown Geral (Com espaçamentos originais restaurados) */
         .prose p {
-            margin-bottom: 0.85rem; 
-            line-height: 1.5; 
+            margin-bottom: 1.25rem; /* Restaura o espaçamento entre parágrafos */
+            line-height: 1.6; 
             font-size: 1.05rem;
             color: #e2e8f0;
         }
         .prose p:last-child {
             margin-bottom: 0;
         }
+        
+        /* Adicionando suporte as Listas com Marcadores (os * do texto) */
+        .prose ul {
+            list-style-type: disc; /* Adiciona a "bolinha" do bullet point */
+            padding-left: 1.5rem; /* Dá o recuo na lista */
+            margin-bottom: 1.25rem;
+            color: #e2e8f0;
+        }
+        .prose ol {
+            list-style-type: decimal; /* Para listas numeradas, se houver */
+            padding-left: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: #e2e8f0;
+        }
+        .prose li {
+            margin-bottom: 0.35rem; /* Espaço entre cada item da lista */
+            line-height: 1.5;
+        }
+        
         .prose blockquote {
             border-left: 4px solid #4f545c; /* Cor da barrinha de blockquote do Discord */
             background: transparent;
             padding: 0 0 0 1rem; 
-            margin: 0.5rem 0 1rem 0; 
+            margin: 1rem 0 1.25rem 0; /* Espaço antes e depois da citação */
             color: #b9bbbe;
-            font-style: normal; /* Discord não deixa itálico por padrão no blockquote */
+            font-style: normal; 
         }
         .prose blockquote p {
-            margin-bottom: 0;
+            margin-bottom: 0.75rem; /* Mantém espaço se a citação tiver vários parágrafos */
             color: #b9bbbe;
+        }
+        .prose blockquote p:last-child {
+            margin-bottom: 0;
         }
         .prose a {
             color: #00aff4; /* Azul de link do Discord */
@@ -59,29 +81,26 @@
             color: #ffffff;
             font-weight: 700;
         }
+        .prose em {
+            font-style: italic; /* Volta o comportamento normal do itálico */
+        }
 
-        /* Estilo específico para textos que são legendas de imagens (Dentro da caixa) */
+        /* Estilo específico para textos que são legendas de imagens (Dentro da caixa escura) */
         .media-caption p {
-            margin-bottom: 0; /* Remove margem para colar na imagem */
+            margin-bottom: 0.75rem; /* Mantém um pequeno respiro */
             font-size: 1rem;
-            line-height: 1.4;
+            line-height: 1.5;
+        }
+        .media-caption p:last-child {
+            margin-bottom: 0; /* Cola na imagem apenas no último parágrafo */
         }
         .media-caption blockquote {
             border-left: 4px solid #4f545c; 
             background: transparent;
             padding: 0 0 0 12px;
-            margin: 0; /* Sem margem para não afastar a imagem */
+            margin: 0 0 0.5rem 0; 
             color: #cbd5e1;
             font-style: normal;
-        }
-
-        /* Força a exibição do * nas legendas em itálico */
-        .media-caption em {
-            font-style: italic;
-        }
-        .media-caption em::before,
-        .media-caption em::after {
-            content: "*"; /* Devolve visualmente os asteriscos que o Markdown oculta */
         }
         
         /* Menu Lateral Customizado */
@@ -304,12 +323,10 @@
                         if (hasMedia) {
                             let mediaBoxContent = '';
                             
-                            // Se tem legenda, remove o padding inferior pra ficar grudado na foto
                             if (htmlContent) {
                                 mediaBoxContent += `<div class="p-4 md:p-5 pb-1 md:pb-1 prose max-w-none media-caption">${htmlContent}</div>`;
                             }
                             
-                            // Fotos (Padding top ajustado para pt-2 para ficar grudado na legenda)
                             if (msg.attachments && msg.attachments.length > 0) {
                                 mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 flex flex-col gap-4">';
                                 msg.attachments.forEach(att => {
@@ -320,7 +337,6 @@
                                 mediaBoxContent += '</div>';
                             }
 
-                            // Vídeos
                             if (msg.embeds && msg.embeds.length > 0) {
                                 mediaBoxContent += '<div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 flex flex-col gap-4">';
                                 msg.embeds.forEach(embed => {
